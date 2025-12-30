@@ -15,6 +15,10 @@
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.6",
         "sheaf/cli": "^1.1",
+        "spatie/enum": "^3.13",
+        "spatie/laravel-data": "^4.18",
+        "spatie/laravel-pdf": "^1.8",
+        "spatie/laravel-validation-rules": "^3.4",
         "wireui/heroicons": "^2.9"
     },
     "require-dev": {

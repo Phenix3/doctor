@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Ce plan d'implémentation utilise Laravel 11, MariaDB, SheafUI (shadcn/ui) et les meilleures librairies PHP pour créer un générateur de documents administratifs robuste et moderne. L'approche privilégie les composants réutilisables, la validation stricte et l'optimisation des performances.
+Ce plan d'implémentation utilise Laravel 12, MariaDB, SheafUI (shadcn/ui) et les meilleures librairies PHP pour créer un générateur de documents administratifs robuste et moderne. L'approche privilégie les composants réutilisables, la validation stricte et l'optimisation des performances.
 
 ## Librairies Recommandées
 
@@ -21,7 +21,7 @@ Ce plan d'implémentation utilise Laravel 11, MariaDB, SheafUI (shadcn/ui) et le
 
 ## Tâches
 
-- [ ] 1. Configuration des modèles de données et migrations MariaDB
+- [x] 1. Configuration des modèles de données et migrations MariaDB
   - Créer les migrations pour document_templates, country_rules, generated_documents
   - Implémenter les enums avec Spatie Enum (DocumentType, ToneLevel, Country)
   - Créer les modèles Eloquent avec relations et casts appropriés
@@ -164,9 +164,33 @@ Ce plan d'implémentation utilise Laravel 11, MariaDB, SheafUI (shadcn/ui) et le
 
 ## Notes
 
-- Tasks marked with `*` are optional and can be skipped for faster MVP
-- Each task references specific requirements for traceability
-- Property tests validate universal correctness properties with comprehensive input coverage
-- Unit tests validate specific examples, edge cases, and component interactions
-- The implementation maintains strict data integrity and neutrality throughout
-- All components are designed for easy extension to support additional countries and document types
+- Les tâches marquées avec `*` sont optionnelles et peuvent être ignorées pour un MVP plus rapide
+- Chaque tâche référence des exigences spécifiques pour la traçabilité
+- Les tests de propriété valident les propriétés de correction universelles avec une couverture d'entrée complète
+- Les tests unitaires valident des exemples spécifiques, des cas limites et des interactions de composants
+- L'implémentation maintient une intégrité stricte des données et la neutralité tout au long
+- Tous les composants sont conçus pour une extension facile vers des pays et types de documents supplémentaires
+
+## Librairies Spécifiques Recommandées
+
+**Pour la génération PDF:**
+- `spatie/laravel-pdf` - Génération PDF moderne avec DomPDF/Puppeteer
+- `barryvdh/laravel-dompdf` - Alternative pour PDF simple
+
+**Pour la validation:**
+- `spatie/laravel-validation-rules` - Règles de validation avancées
+- `spatie/laravel-data` - Transformation et validation de données
+
+**Pour les enums et structures:**
+- `spatie/enum` - Enums PHP robustes
+- `spatie/laravel-model-states` - Gestion d'états de modèles
+
+**Pour les tests:**
+- `pestphp/pest` - Framework de test moderne
+- `pestphp/pest-plugin-laravel` - Plugin Laravel pour Pest
+- `fakerphp/faker` - Génération de données de test
+
+**Pour l'interface utilisateur:**
+- SheafUI (shadcn/ui) - Composants UI modernes
+- Alpine.js - Interactions JavaScript légères
+- Tailwind CSS - Styling utilitaire

@@ -19,5 +19,11 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Seed African Administrative Document Generator data
+        $this->call([
+            CountryRulesSeeder::class,
+            DocumentTemplatesSeeder::class,
+        ]);
     }
 }
