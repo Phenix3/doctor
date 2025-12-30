@@ -13,6 +13,7 @@ The African Administrative Document Generator is an AI-powered system that gener
 - **Tone_Levels**: Formality levels (Simple, Official, Very Official)
 - **Country_Adapter**: Component that applies country-specific administrative conventions
 - **Output_Formatter**: Component that formats final document for export
+- **Language_Support**: Multi-language functionality (French and English)
 
 ## Requirements
 
@@ -114,3 +115,15 @@ The African Administrative Document Generator is an AI-powered system that gener
 3. WHEN generating documents, THE Document_Generator SHALL preserve the accuracy of all user-provided information
 4. THE Document_Generator SHALL NOT modify names, dates, or factual information provided by users
 5. IF data processing fails, THE Document_Generator SHALL provide clear error messages without exposing system internals
+
+### Requirement 9: Multi-Language Support
+
+**User Story:** As a user, I want to generate documents in French or English, so that I can create documents in the appropriate language for my administrative context.
+
+#### Acceptance Criteria
+
+1. WHEN French is selected as the language, THE Document_Generator SHALL produce documents using French administrative terminology and formatting
+2. WHEN English is selected as the language, THE Document_Generator SHALL produce documents using English administrative terminology and formatting
+3. THE Document_Generator SHALL maintain consistent language throughout the entire document
+4. THE Document_Generator SHALL support language-specific politeness formulas and administrative conventions
+5. WHEN a language is selected, THE Template_Engine SHALL apply appropriate language-specific templates and formatting rules
