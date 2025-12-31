@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\TemplateEngine;
 use App\Services\CountryAdapter;
 use App\Services\OutputFormatter;
+use App\Services\ContentNeutralityValidator;
 use App\Services\DocumentGeneratorService;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,12 +31,18 @@ class AppServiceProvider extends ServiceProvider
             return new OutputFormatter();
         });
 
+        // Register ContentNeutralityValidator as singleton
+        $this->app->singleton(ContentNeutralityValidator::class, function ($app) {
+            return new ContentNeutralityValidator();
+        });
+
         // Register DocumentGeneratorService as singleton with dependency injection
         $this->app->singleton(DocumentGeneratorService::class, function ($app) {
             return new DocumentGeneratorService(
                 $app->make(TemplateEngine::class),
                 $app->make(CountryAdapter::class),
-                $app->make(OutputFormatter::class)
+                $app->make(OutputFormatter::class),
+                $app->make(ContentNeutralityValidator::class)
             );
         });
     }

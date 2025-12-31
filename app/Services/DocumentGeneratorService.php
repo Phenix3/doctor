@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
+use App\Services\ContentNeutralityValidator;
 use Exception;
 
 class DocumentGeneratorService
@@ -20,6 +21,7 @@ class DocumentGeneratorService
         private TemplateEngine $templateEngine,
         private CountryAdapter $countryAdapter,
         private OutputFormatter $outputFormatter,
+        private ContentNeutralityValidator $neutralityValidator,
     ) {}
 
     /**
@@ -66,7 +68,32 @@ class DocumentGeneratorService
                     $request->tone_level
                 );
 
-                // Step 4: Final content sanitization and validation
+                // Step 4: Apply content neutrality validation (Requirements 6.1-6.5)
+                $neutralityResult = $this->neutralityValidator->validateContentNeutrality(
+                    $finalContent,
+                    $request->fields
+                );
+
+                if (!$neutralityResult['is_neutral']) {
+                    $violationMessages = $this->neutralityValidator->getViolationMessages(
+                        $neutralityResult['violations'],
+                        $request->language
+                    );
+                    
+                    Log::warning('Content neutrality violations detected during generation', [
+                        'session_id' => $sessionId,
+                        'violations' => $neutralityResult['violations'],
+                        'violation_count' => $neutralityResult['violation_count']
+                    ]);
+
+                    return DocumentGenerationResult::failure(
+                        'Le contenu généré ne respecte pas les exigences de neutralité',
+                        $violationMessages,
+                        $sessionId
+                    );
+                }
+
+                // Step 5: Final content sanitization and validation
                 $sanitizedContent = $this->sanitizeContent($finalContent);
                 
                 // Validate content integrity (Requirement 1.2)
@@ -74,14 +101,14 @@ class DocumentGeneratorService
                     throw new Exception('Intégrité du contenu compromise lors de la génération');
                 }
 
-                // Step 5: Store in temporary session (no persistence beyond session - Requirement 8.2)
+                // Step 6: Store in temporary session (no persistence beyond session - Requirement 8.2)
                 $documentId = $this->storeTemporaryDocument(
                     $sessionId,
                     $request,
                     $sanitizedContent
                 );
 
-                // Step 6: Prepare metadata
+                // Step 7: Prepare metadata
                 $metadata = $this->prepareGenerationMetadata($request);
 
                 return DocumentGenerationResult::success(
@@ -154,6 +181,25 @@ class DocumentGeneratorService
             );
 
             $sanitizedContent = $this->sanitizeContent($finalContent);
+
+            // Apply content neutrality validation for preview as well
+            $neutralityResult = $this->neutralityValidator->validateContentNeutrality(
+                $sanitizedContent,
+                $request->fields
+            );
+
+            if (!$neutralityResult['is_neutral']) {
+                $violationMessages = $this->neutralityValidator->getViolationMessages(
+                    $neutralityResult['violations'],
+                    $request->language
+                );
+                
+                return DocumentGenerationResult::failure(
+                    'Le contenu de prévisualisation ne respecte pas les exigences de neutralité',
+                    $violationMessages,
+                    $request->session_id
+                );
+            }
 
             return DocumentGenerationResult::success(
                 $sanitizedContent,

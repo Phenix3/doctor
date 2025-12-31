@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\Country;
 use App\Enums\DocumentType;
 use App\Enums\ToneLevel;
+use App\Rules\ContentNeutralityRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Spatie\ValidationRules\Rules\Delimited;
@@ -79,6 +80,8 @@ class DocumentRequest extends FormRequest
     protected function getDocumentTypeSpecificRules(string $documentType): array
     {
         $rules = [];
+        $language = $this->input('language', 'fr');
+        $neutralityRule = new ContentNeutralityRule($language);
 
         switch ($documentType) {
             case 'ADMINISTRATIVE_APPLICATION':
@@ -86,8 +89,8 @@ class DocumentRequest extends FormRequest
                     'fields.applicant_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.applicant_address' => ['required', 'string', 'max:255'],
                     'fields.recipient_title' => ['required', 'string', 'max:100'],
-                    'fields.subject' => ['required', 'string', 'max:200'],
-                    'fields.request_details' => ['required', 'string', 'max:2000'],
+                    'fields.subject' => ['required', 'string', 'max:200', $neutralityRule],
+                    'fields.request_details' => ['required', 'string', 'max:2000', $neutralityRule],
                     'fields.applicant_phone' => ['nullable', 'string', 'regex:/^[\+]?[0-9\s\-\(\)]{8,20}$/'],
                     'fields.applicant_email' => ['nullable', 'email', 'max:100'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
@@ -101,8 +104,8 @@ class DocumentRequest extends FormRequest
                     'fields.recipient_name' => ['required', 'string', 'max:100'],
                     'fields.recipient_organization' => ['required', 'string', 'max:150'],
                     'fields.position_title' => ['required', 'string', 'max:100'],
-                    'fields.motivation_content' => ['required', 'string', 'max:3000'],
-                    'fields.qualifications' => ['nullable', 'string', 'max:1500'],
+                    'fields.motivation_content' => ['required', 'string', 'max:3000', $neutralityRule],
+                    'fields.qualifications' => ['nullable', 'string', 'max:1500', $neutralityRule],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -124,7 +127,7 @@ class DocumentRequest extends FormRequest
                 $rules = array_merge($rules, [
                     'fields.declarant_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.declarant_address' => ['required', 'string', 'max:255'],
-                    'fields.declaration_content' => ['required', 'string', 'max:2000'],
+                    'fields.declaration_content' => ['required', 'string', 'max:2000', $neutralityRule],
                     'fields.identity_document_type' => ['required', 'string', 'max:50'],
                     'fields.identity_document_number' => ['required', 'string', 'max:50'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
@@ -136,10 +139,10 @@ class DocumentRequest extends FormRequest
                     'fields.complainant_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.complainant_address' => ['required', 'string', 'max:255'],
                     'fields.recipient_title' => ['required', 'string', 'max:100'],
-                    'fields.complaint_subject' => ['required', 'string', 'max:200'],
-                    'fields.complaint_details' => ['required', 'string', 'max:2500'],
+                    'fields.complaint_subject' => ['required', 'string', 'max:200', $neutralityRule],
+                    'fields.complaint_details' => ['required', 'string', 'max:2500', $neutralityRule],
                     'fields.incident_date' => ['nullable', 'date', 'date_format:Y-m-d'],
-                    'fields.desired_resolution' => ['nullable', 'string', 'max:1000'],
+                    'fields.desired_resolution' => ['nullable', 'string', 'max:1000', $neutralityRule],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -149,7 +152,7 @@ class DocumentRequest extends FormRequest
                     'fields.requester_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.requester_address' => ['required', 'string', 'max:255'],
                     'fields.act_type' => ['required', 'string', 'max:100'],
-                    'fields.justification' => ['required', 'string', 'max:2000'],
+                    'fields.justification' => ['required', 'string', 'max:2000', $neutralityRule],
                     'fields.supporting_documents' => ['nullable', 'string', 'max:500'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
@@ -160,8 +163,8 @@ class DocumentRequest extends FormRequest
                     'fields.appellant_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.appellant_address' => ['required', 'string', 'max:255'],
                     'fields.original_decision_reference' => ['required', 'string', 'max:100'],
-                    'fields.appeal_grounds' => ['required', 'string', 'max:2500'],
-                    'fields.requested_action' => ['required', 'string', 'max:500'],
+                    'fields.appeal_grounds' => ['required', 'string', 'max:2500', $neutralityRule],
+                    'fields.requested_action' => ['required', 'string', 'max:500', $neutralityRule],
                     'fields.original_decision_date' => ['nullable', 'date', 'date_format:Y-m-d'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
@@ -172,8 +175,8 @@ class DocumentRequest extends FormRequest
                     'fields.sender_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.sender_address' => ['required', 'string', 'max:255'],
                     'fields.recipient_title' => ['required', 'string', 'max:100'],
-                    'fields.subject' => ['required', 'string', 'max:200'],
-                    'fields.message_content' => ['required', 'string', 'max:2500'],
+                    'fields.subject' => ['required', 'string', 'max:200', $neutralityRule],
+                    'fields.message_content' => ['required', 'string', 'max:2500', $neutralityRule],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -235,6 +238,20 @@ class DocumentRequest extends FormRequest
             'fields.requester_address.max' => 'L\'adresse du demandeur ne peut pas dépasser 255 caractères.',
             'fields.appellant_address.max' => 'L\'adresse de l\'appelant ne peut pas dépasser 255 caractères.',
             'fields.sender_address.max' => 'L\'adresse de l\'expéditeur ne peut pas dépasser 255 caractères.',
+
+            // Content neutrality messages
+            'fields.subject.content_neutrality' => 'L\'objet ne peut contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.request_details.content_neutrality' => 'Les détails de la demande ne peuvent contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.motivation_content.content_neutrality' => 'Le contenu de motivation ne peut contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.qualifications.content_neutrality' => 'Les qualifications ne peuvent contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.declaration_content.content_neutrality' => 'Le contenu de la déclaration ne peut contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.complaint_subject.content_neutrality' => 'L\'objet de la plainte ne peut contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.complaint_details.content_neutrality' => 'Les détails de la plainte ne peuvent contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.desired_resolution.content_neutrality' => 'La résolution souhaitée ne peut contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.justification.content_neutrality' => 'La justification ne peut contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.appeal_grounds.content_neutrality' => 'Les motifs du recours ne peuvent contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.requested_action.content_neutrality' => 'L\'action demandée ne peut contenir de conseils juridiques, d\'opinions ou de références légales.',
+            'fields.message_content.content_neutrality' => 'Le contenu du message ne peut contenir de conseils juridiques, d\'opinions ou de références légales.',
         ];
     }
 

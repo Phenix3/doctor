@@ -99,7 +99,7 @@ Ce plan d'implémentation utilise Laravel 12, MariaDB, SheafUI (shadcn/ui) et le
   - **Property 4: Clean Output Format**
   - **Validates: Requirements 1.5, 7.1, 7.2, 7.3**
 
-- [ ] 7. Ajout de l'application de la neutralité du contenu
+- [x] 7. Ajout de l'application de la neutralité du contenu
   - Implémenter les vérifications de contenu prohibé
   - Ajouter les contrôles pour conseils juridiques et opinions
   - Créer les méthodes de validation de neutralité
