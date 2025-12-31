@@ -69,7 +69,7 @@ Ce plan d'implémentation utilise Laravel 12, MariaDB, SheafUI (shadcn/ui) et le
   - **Property 9: Country Adaptation Integrity**
   - **Validates: Requirements 5.1-5.5**
 
-- [ ] 5. Développement du service principal de génération avec Spatie Data
+- [x] 5. Développement du service principal de génération avec Spatie Data
   - Créer DocumentGeneratorService avec injection de dépendances
   - Utiliser Spatie Data pour la transformation des données
   - Implémenter la logique d'orchestration complète
