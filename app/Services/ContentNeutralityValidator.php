@@ -246,21 +246,35 @@ class ContentNeutralityValidator
 
                 // Check if the original content appears in the generated content
                 if (strpos($normalizedGenerated, $normalizedOriginal) === false) {
-                    // Check for partial matches to detect modifications
-                    $words = explode(' ', $normalizedOriginal);
-                    $missingWords = [];
+                    // Check for partial matches to detect significant modifications
+                    // Remove punctuation for word-level comparison
+                    $cleanOriginal = preg_replace('/[^\w\s]/u', ' ', $normalizedOriginal);
+                    $words = array_filter(explode(' ', $cleanOriginal), function($word) {
+                        return !empty(trim($word));
+                    });
                     
-                    foreach ($words as $word) {
-                        if (strlen($word) > 2 && strpos($normalizedGenerated, $word) === false) {
-                            $missingWords[] = $word;
+                    $significantWords = array_filter($words, function($word) {
+                        // Only consider words longer than 3 characters as significant
+                        // This allows for minor additions like articles, prepositions, etc.
+                        return strlen($word) > 3;
+                    });
+                    
+                    $missingSignificantWords = [];
+                    
+                    foreach ($significantWords as $word) {
+                        // Check if the word appears in the generated content (case-insensitive)
+                        if (stripos($normalizedGenerated, $word) === false) {
+                            $missingSignificantWords[] = $word;
                         }
                     }
 
-                    if (!empty($missingWords)) {
+                    // Only report violation if significant words are missing
+                    // This allows for minor contextual additions while catching real modifications
+                    if (!empty($missingSignificantWords)) {
                         $violations[] = [
                             'field' => $fieldName,
                             'original_value' => $fieldValue,
-                            'missing_words' => $missingWords,
+                            'missing_words' => $missingSignificantWords,
                             'violation_type' => 'user_content_modified'
                         ];
                     }

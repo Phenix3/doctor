@@ -7,6 +7,7 @@ use App\Services\CountryAdapter;
 use App\Services\OutputFormatter;
 use App\Services\ContentNeutralityValidator;
 use App\Services\DocumentGeneratorService;
+use App\Services\ErrorHandlingService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -36,13 +37,19 @@ class AppServiceProvider extends ServiceProvider
             return new ContentNeutralityValidator();
         });
 
+        // Register ErrorHandlingService as singleton
+        $this->app->singleton(ErrorHandlingService::class, function ($app) {
+            return new ErrorHandlingService();
+        });
+
         // Register DocumentGeneratorService as singleton with dependency injection
         $this->app->singleton(DocumentGeneratorService::class, function ($app) {
             return new DocumentGeneratorService(
                 $app->make(TemplateEngine::class),
                 $app->make(CountryAdapter::class),
                 $app->make(OutputFormatter::class),
-                $app->make(ContentNeutralityValidator::class)
+                $app->make(ContentNeutralityValidator::class),
+                $app->make(ErrorHandlingService::class)
             );
         });
     }

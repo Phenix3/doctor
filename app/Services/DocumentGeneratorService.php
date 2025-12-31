@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use App\Services\ContentNeutralityValidator;
+use App\Services\ErrorHandlingService;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ContentNeutralityException;
+use App\Exceptions\DataIntegrityException;
+use App\Exceptions\UserContentModificationException;
+use App\Exceptions\SessionDataCorruptionException;
 use Exception;
 
 class DocumentGeneratorService
@@ -22,6 +28,7 @@ class DocumentGeneratorService
         private CountryAdapter $countryAdapter,
         private OutputFormatter $outputFormatter,
         private ContentNeutralityValidator $neutralityValidator,
+        private ErrorHandlingService $errorHandler,
     ) {}
 
     /**
@@ -35,10 +42,10 @@ class DocumentGeneratorService
             // Validate request data integrity (Requirement 1.2, 8.2)
             $validationResult = $this->validateRequest($request);
             if (!$validationResult['valid']) {
-                return DocumentGenerationResult::failure(
+                throw $this->errorHandler->handleValidationError(
                     'Données de requête invalides',
                     $validationResult['errors'],
-                    $request->session_id
+                    ['session_id' => $request->session_id]
                 );
             }
 
@@ -80,16 +87,10 @@ class DocumentGeneratorService
                         $request->language
                     );
                     
-                    Log::warning('Content neutrality violations detected during generation', [
-                        'session_id' => $sessionId,
-                        'violations' => $neutralityResult['violations'],
-                        'violation_count' => $neutralityResult['violation_count']
-                    ]);
-
-                    return DocumentGenerationResult::failure(
+                    throw $this->errorHandler->handleContentNeutralityViolation(
                         'Le contenu généré ne respecte pas les exigences de neutralité',
-                        $violationMessages,
-                        $sessionId
+                        $neutralityResult['violations'],
+                        ['session_id' => $sessionId]
                     );
                 }
 
@@ -98,7 +99,9 @@ class DocumentGeneratorService
                 
                 // Validate content integrity (Requirement 1.2)
                 if (!$this->validateContentIntegrity($request->fields, $sanitizedContent)) {
-                    throw new Exception('Intégrité du contenu compromise lors de la génération');
+                    throw $this->errorHandler->handleUserContentModification(
+                        array_keys($request->fields)
+                    );
                 }
 
                 // Step 6: Store in temporary session (no persistence beyond session - Requirement 8.2)
@@ -119,28 +122,23 @@ class DocumentGeneratorService
                 );
             });
 
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (ContentNeutralityException $e) {
+            throw $e;
+        } catch (DataIntegrityException $e) {
+            throw $e;
         } catch (InvalidArgumentException $e) {
-            Log::warning('Document generation validation error', [
-                'error' => $e->getMessage(),
-                'request' => $request->toArray()
-            ]);
-
-            return DocumentGenerationResult::failure(
+            throw $this->errorHandler->handleValidationError(
                 'Erreur de validation: ' . $e->getMessage(),
                 [],
-                $request->session_id
+                ['session_id' => $request->session_id]
             );
-
         } catch (Exception $e) {
-            Log::error('Document generation failed', [
-                'error' => $e->getMessage(),
-                'request' => $request->toArray()
-            ]);
-
-            return DocumentGenerationResult::failure(
+            throw $this->errorHandler->wrapUnexpectedException(
+                $e,
                 'Erreur lors de la génération du document',
-                [],
-                $request->session_id
+                ['session_id' => $request->session_id]
             );
         }
     }
@@ -154,10 +152,10 @@ class DocumentGeneratorService
             // Validate request
             $validationResult = $this->validateRequest($request);
             if (!$validationResult['valid']) {
-                return DocumentGenerationResult::failure(
+                throw $this->errorHandler->handleValidationError(
                     'Données de requête invalides',
                     $validationResult['errors'],
-                    $request->session_id
+                    ['session_id' => $request->session_id]
                 );
             }
 
@@ -194,10 +192,10 @@ class DocumentGeneratorService
                     $request->language
                 );
                 
-                return DocumentGenerationResult::failure(
+                throw $this->errorHandler->handleContentNeutralityViolation(
                     'Le contenu de prévisualisation ne respecte pas les exigences de neutralité',
-                    $violationMessages,
-                    $request->session_id
+                    $neutralityResult['violations'],
+                    ['session_id' => $request->session_id]
                 );
             }
 
@@ -208,16 +206,15 @@ class DocumentGeneratorService
                 ['preview' => true]
             );
 
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (ContentNeutralityException $e) {
+            throw $e;
         } catch (Exception $e) {
-            Log::error('Document preview failed', [
-                'error' => $e->getMessage(),
-                'request' => $request->toArray()
-            ]);
-
-            return DocumentGenerationResult::failure(
+            throw $this->errorHandler->wrapUnexpectedException(
+                $e,
                 'Erreur lors de la prévisualisation du document',
-                [],
-                $request->session_id
+                ['session_id' => $request->session_id]
             );
         }
     }
@@ -442,7 +439,11 @@ class DocumentGeneratorService
             $documentResult = $this->generateDocument($request);
             
             if (!$documentResult->isSuccessful()) {
-                return $documentResult;
+                throw $this->errorHandler->handleDocumentGenerationError(
+                    $documentResult->getFormattedErrorMessage(),
+                    'PDF generation failed due to document generation failure',
+                    ['session_id' => $request->session_id]
+                );
             }
             
             // Use administrative document options by default
@@ -453,10 +454,9 @@ class DocumentGeneratorService
             // Validate PDF options
             $validationErrors = $this->outputFormatter->validatePDFOptions($options);
             if (!empty($validationErrors)) {
-                return DocumentGenerationResult::failure(
-                    'Options PDF invalides',
+                throw $this->errorHandler->handleInvalidPDFOptions(
                     $validationErrors,
-                    $request->session_id
+                    $options
                 );
             }
             
@@ -484,15 +484,9 @@ class DocumentGeneratorService
             ]);
             
         } catch (Exception $e) {
-            Log::error('PDF generation failed', [
-                'error' => $e->getMessage(),
-                'request' => $request->toArray()
-            ]);
-            
-            return DocumentGenerationResult::failure(
-                'Erreur lors de la génération du PDF: ' . $e->getMessage(),
-                [],
-                $request->session_id
+            throw $this->errorHandler->handlePDFGenerationError(
+                $e->getMessage(),
+                $pdfOptions ?? []
             );
         }
     }

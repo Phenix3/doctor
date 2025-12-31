@@ -2,6 +2,7 @@
 
 use App\Services\DocumentGeneratorService;
 use App\Data\DocumentGenerationRequest;
+use App\Exceptions\ValidationException;
 use App\Models\DocumentTemplate;
 use App\Models\CountryRule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -65,10 +66,9 @@ test('fails with missing required fields', function () {
         session_id: 'test_session_123'
     );
 
-    $result = $service->generateDocument($request);
-
-    expect($result->success)->toBeFalse();
-    expect($result->errors)->not->toBeEmpty();
+    // Expect ValidationException to be thrown for missing required fields
+    expect(fn() => $service->generateDocument($request))
+        ->toThrow(ValidationException::class, 'Champs obligatoires manquants');
 });
 
 test('returns supported document types', function () {
