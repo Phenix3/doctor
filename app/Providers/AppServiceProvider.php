@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\TemplateEngine;
 use App\Services\CountryAdapter;
+use App\Services\OutputFormatter;
 use App\Services\DocumentGeneratorService;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,11 +25,17 @@ class AppServiceProvider extends ServiceProvider
             return new CountryAdapter();
         });
 
+        // Register OutputFormatter as singleton
+        $this->app->singleton(OutputFormatter::class, function ($app) {
+            return new OutputFormatter();
+        });
+
         // Register DocumentGeneratorService as singleton with dependency injection
         $this->app->singleton(DocumentGeneratorService::class, function ($app) {
             return new DocumentGeneratorService(
                 $app->make(TemplateEngine::class),
-                $app->make(CountryAdapter::class)
+                $app->make(CountryAdapter::class),
+                $app->make(OutputFormatter::class)
             );
         });
     }

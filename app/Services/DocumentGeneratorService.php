@@ -19,6 +19,7 @@ class DocumentGeneratorService
     public function __construct(
         private TemplateEngine $templateEngine,
         private CountryAdapter $countryAdapter,
+        private OutputFormatter $outputFormatter,
     ) {}
 
     /**
@@ -381,6 +382,106 @@ class DocumentGeneratorService
     public function cleanupExpiredDocuments(): int
     {
         return GeneratedDocument::cleanupExpired();
+    }
+
+    /**
+     * Generate PDF from document content
+     * 
+     * Requirements: 1.5, 7.1, 7.2, 7.3
+     */
+    public function generateDocumentPDF(DocumentGenerationRequest $request, array $pdfOptions = []): DocumentGenerationResult
+    {
+        try {
+            // First generate the document content
+            $documentResult = $this->generateDocument($request);
+            
+            if (!$documentResult->isSuccessful()) {
+                return $documentResult;
+            }
+            
+            // Use administrative document options by default
+            $options = empty($pdfOptions) 
+                ? $this->outputFormatter->getAdministrativeDocumentOptions()
+                : $pdfOptions;
+            
+            // Validate PDF options
+            $validationErrors = $this->outputFormatter->validatePDFOptions($options);
+            if (!empty($validationErrors)) {
+                return DocumentGenerationResult::failure(
+                    'Options PDF invalides',
+                    $validationErrors,
+                    $request->session_id
+                );
+            }
+            
+            // Generate PDF
+            $pdfContent = $this->outputFormatter->generatePDF($documentResult->content, $options);
+            
+            // Save PDF temporarily
+            $filename = $this->generatePDFFilename($request);
+            $pdfPath = $this->outputFormatter->savePDF($pdfContent, $filename);
+            
+            // Update document record with PDF path
+            if ($documentResult->document_id) {
+                $document = GeneratedDocument::find($documentResult->document_id);
+                if ($document) {
+                    $document->update(['pdf_path' => $pdfPath]);
+                }
+            }
+            
+            // Return result with PDF metadata
+            return $documentResult->withMetadata([
+                'pdf_generated' => true,
+                'pdf_path' => $pdfPath,
+                'pdf_size' => strlen($pdfContent),
+                'pdf_options' => $options
+            ]);
+            
+        } catch (Exception $e) {
+            Log::error('PDF generation failed', [
+                'error' => $e->getMessage(),
+                'request' => $request->toArray()
+            ]);
+            
+            return DocumentGenerationResult::failure(
+                'Erreur lors de la génération du PDF: ' . $e->getMessage(),
+                [],
+                $request->session_id
+            );
+        }
+    }
+
+    /**
+     * Generate PDF preview without storing
+     */
+    public function previewDocumentPDF(DocumentGenerationRequest $request, array $pdfOptions = []): string
+    {
+        // Generate preview content
+        $documentResult = $this->previewDocument($request);
+        
+        if (!$documentResult->isSuccessful()) {
+            throw new Exception($documentResult->getFormattedErrorMessage());
+        }
+        
+        // Use administrative document options by default
+        $options = empty($pdfOptions) 
+            ? $this->outputFormatter->getAdministrativeDocumentOptions()
+            : $pdfOptions;
+        
+        // Generate and return PDF content
+        return $this->outputFormatter->generatePDF($documentResult->content, $options);
+    }
+
+    /**
+     * Generate PDF filename based on request
+     */
+    private function generatePDFFilename(DocumentGenerationRequest $request): string
+    {
+        $timestamp = now()->format('Y-m-d_H-i-s');
+        $documentType = str_replace('_', '-', $request->document_type);
+        $country = strtolower($request->country);
+        
+        return "{$documentType}_{$country}_{$timestamp}.pdf";
     }
 
     /**

@@ -88,7 +88,7 @@ Ce plan d'implémentation utilise Laravel 12, MariaDB, SheafUI (shadcn/ui) et le
   - **Property 11: Session Data Isolation**
   - **Validates: Requirements 8.2**
 
-- [ ] 6. Implémentation du formatage de sortie avec Spatie PDF
+- [x] 6. Implémentation du formatage de sortie avec Spatie PDF
   - Créer OutputFormatter utilisant Spatie Laravel PDF
   - Implémenter la génération PDF avec DomPDF/Puppeteer
   - Ajouter la sanitisation et le formatage pour l'export
