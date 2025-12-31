@@ -121,7 +121,7 @@ Ce plan d'implémentation utilise Laravel 12, MariaDB, SheafUI (shadcn/ui) et le
   - **Property 12: Error Message Quality**
   - **Validates: Requirements 8.5**
 
-- [ ] 9. Création des composants SheafUI pour l'interface utilisateur
+- [x] 9. Création des composants SheafUI pour l'interface utilisateur
   - Créer les composants shadcn/ui pour la sélection de pays et type
   - Implémenter le formulaire dynamique avec validation en temps réel
   - Ajouter les composants de prévisualisation et d'export

@@ -5,6 +5,22 @@
         class="mx-auto"
     >
         <x-ui.heading class="flex items-center justify-between mb-4" level="h3" size="sm">
+            Générateur de Documents Administratifs
+            <x-ui.link href="{{ route('document-generator') }}">
+                <x-ui.icon name="arrow-up-right" class="text-gray-800 dark:text-white size-4" />
+            </x-ui.link>
+        </x-ui.heading>
+        <x-ui.text>
+            Créez des documents administratifs professionnels adaptés aux conventions locales des pays africains.
+            Générez des lettres, demandes et attestations avec la bonne formalité.
+        </x-ui.text>
+    </x-ui.card>
+    
+    <x-ui.card 
+        size="xl"
+        class="mx-auto"
+    >
+        <x-ui.heading class="flex items-center justify-between mb-4" level="h3" size="sm">
             Welcome to Sheaf UI
             <x-ui.link href="https://sheafui.dev" openInNewTab>
                 <x-ui.icon name="arrow-up-right" class="text-gray-800 dark:text-white size-4" />

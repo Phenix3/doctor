@@ -10,6 +10,7 @@ use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Auth\VerifyEmail;
 use App\Livewire\Dashboard;
 use App\Livewire\Settings\Account;
+use App\Livewire\DocumentGenerator;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,7 @@ Route::get('reset-password/{token}', ResetPassword::class)->name('password.reset
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/document-generator', DocumentGenerator::class)->name('document-generator');
     Route::get('/settings/account', Account::class)->name('settings.account');
 });
 
