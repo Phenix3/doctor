@@ -90,6 +90,15 @@ class CountryRule extends Model
     }
 
     /**
+     * Get all politeness formulas for a tone level
+     */
+    public function getAllFormulasForTone(string $toneLevel): array
+    {
+        $formulas = $this->politeness_formulas ?? [];
+        return $formulas[$toneLevel] ?? $formulas['official'] ?? [];
+    }
+
+    /**
      * Get administrative term translation
      */
     public function getAdministrativeTerm(string $term): ?string
@@ -97,6 +106,14 @@ class CountryRule extends Model
         $terminology = $this->administrative_terminology ?? [];
         
         return $terminology[$term] ?? null;
+    }
+
+    /**
+     * Get all administrative terms
+     */
+    public function getAllAdministrativeTerms(): array
+    {
+        return $this->administrative_terminology ?? [];
     }
 
     /**
@@ -120,5 +137,38 @@ class CountryRule extends Model
         }
         
         return $template;
+    }
+
+    /**
+     * Get document structure rule
+     */
+    public function getDocumentStructureRule(string $rule): mixed
+    {
+        $rules = $this->document_structure_rules ?? [];
+        return $rules[$rule] ?? null;
+    }
+
+    /**
+     * Check if reference is required for documents
+     */
+    public function isReferenceRequired(): bool
+    {
+        return $this->getDocumentStructureRule('reference_required') ?? false;
+    }
+
+    /**
+     * Get date position in document
+     */
+    public function getDatePosition(): string
+    {
+        return $this->getDocumentStructureRule('date_position') ?? 'top_right';
+    }
+
+    /**
+     * Get signature position in document
+     */
+    public function getSignaturePosition(): string
+    {
+        return $this->getDocumentStructureRule('signature_position') ?? 'bottom_right';
     }
 }
