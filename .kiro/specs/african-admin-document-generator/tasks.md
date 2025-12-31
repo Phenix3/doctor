@@ -32,7 +32,7 @@ Ce plan d'implémentation utilise Laravel 12, MariaDB, SheafUI (shadcn/ui) et le
   - **Property 2: Data Integrity Preservation**
   - **Validates: Requirements 1.2, 8.1, 8.3, 8.4**
 
-- [ ] 2. Implémentation des Form Requests Laravel avec validation avancée
+- [x] 2. Implémentation des Form Requests Laravel avec validation avancée
   - Créer DocumentRequest avec règles de validation Spatie
   - Implémenter la validation conditionnelle par type de document
   - Ajouter la validation des formats (noms, dates, adresses africaines)
@@ -47,7 +47,7 @@ Ce plan d'implémentation utilise Laravel 12, MariaDB, SheafUI (shadcn/ui) et le
   - **Property 6: Validation Data Isolation**
   - **Validates: Requirements 2.3**
 
-- [ ] 3. Création du système de templates avec Blade et cache Laravel
+- [x] 3. Création du système de templates avec Blade et cache Laravel
   - Créer les templates Blade pour chaque type de document
   - Implémenter TemplateEngine avec Laravel Cache
   - Configurer le système de mise en cache des templates

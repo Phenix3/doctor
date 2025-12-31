@@ -19,6 +19,7 @@ test('document template can be created and retrieved', function () {
         'document_type' => 'motivation_letter',
         'country' => 'CI',
         'language' => 'fr',
+        'is_active' => true,
     ]);
 
     expect($template->document_type)->toBe('motivation_letter');
@@ -53,12 +54,12 @@ test('document template validates required fields correctly', function () {
     $validFields = [
         'sender_name' => 'John Doe',
         'sender_address' => '123 Main St',
+        'sender_city' => 'Dakar',
         'recipient_name' => 'Jane Smith',
-        'recipient_address' => '456 Oak Ave',
-        'object' => 'Test Object',
-        'content' => 'Test content',
-        'date' => '2023-12-30',
-        'city' => 'Dakar'
+        'recipient_organization' => 'Test Organization',
+        'subject' => 'Test Subject',
+        'request_context' => 'Test context',
+        'request_details' => 'Test details'
     ];
     
     expect($template->hasAllRequiredFields($validFields))->toBeTrue();
