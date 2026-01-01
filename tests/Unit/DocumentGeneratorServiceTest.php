@@ -109,9 +109,12 @@ test('can create document generation request from form request data', function (
         'language' => 'fr',
         'fields' => [
             'applicant_name' => 'Jean Dupont',
-            'applicant_address' => '123 Rue de la Paix, Dakar',
+            'applicant_address' => '123 Rue de la Paix',
+            'applicant_city' => 'Dakar',
             'recipient_title' => 'Monsieur le Directeur',
+            'recipient_organization' => 'Ministère de l\'Éducation',
             'subject' => 'Demande de certificat',
+            'request_context' => 'un certificat de résidence',
             'request_details' => 'Je sollicite par la présente un certificat de résidence.',
             'date' => '2024-01-15'
         ]

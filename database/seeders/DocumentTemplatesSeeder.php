@@ -31,329 +31,396 @@ class DocumentTemplatesSeeder extends Seeder
      */
     private function getTemplateData(): array
     {
-        return [
-            // Administrative Application Templates
-            [
-                'document_type' => 'administrative_application',
-                'country' => 'SN',
-                'language' => 'fr',
-                'template_content' => 'Blade template for administrative application',
-                'required_fields' => [
-                    'sender_name',
-                    'sender_address',
-                    'sender_city',
-                    'recipient_name',
-                    'recipient_organization',
-                    'subject',
-                    'request_context',
-                    'request_details'
-                ],
-                'optional_fields' => [
-                    'sender_phone',
-                    'sender_email',
-                    'recipient_title',
-                    'recipient_address',
-                    'recipient_city',
-                    'justification',
-                    'expected_outcome',
-                    'attachments',
-                    'sender_signature'
-                ],
-                'validation_rules' => [
-                    'sender_email' => ['email'],
-                    'sender_phone' => ['phone']
-                ],
-                'is_active' => true,
-            ],
-            [
-                'document_type' => 'administrative_application',
-                'country' => 'CI',
-                'language' => 'fr',
-                'template_content' => 'Blade template for administrative application - Ivory Coast',
-                'required_fields' => [
-                    'sender_name',
-                    'sender_address',
-                    'sender_city',
-                    'recipient_name',
-                    'recipient_organization',
-                    'subject',
-                    'request_context',
-                    'request_details'
-                ],
-                'optional_fields' => [
-                    'sender_phone',
-                    'sender_email',
-                    'recipient_title',
-                    'recipient_address',
-                    'recipient_city',
-                    'justification',
-                    'expected_outcome',
-                    'attachments',
-                    'sender_signature'
-                ],
-                'validation_rules' => [
-                    'sender_email' => ['email'],
-                    'sender_phone' => ['phone']
-                ],
-                'is_active' => true,
-            ],
+        $countries = ['SN', 'CI', 'ML', 'BF', 'TG', 'NE'];
+        $languages = ['fr', 'en'];
+        $templates = [];
 
-            // Motivation Letter Templates
-            [
-                'document_type' => 'motivation_letter',
-                'country' => 'SN',
-                'language' => 'fr',
-                'template_content' => 'Blade template for motivation letter',
-                'required_fields' => [
-                    'sender_name',
-                    'sender_address',
-                    'sender_city',
-                    'recipient_name',
-                    'recipient_organization',
-                    'subject',
-                    'introduction',
-                    'motivation_reasons'
-                ],
-                'optional_fields' => [
-                    'sender_phone',
-                    'sender_email',
-                    'recipient_title',
-                    'recipient_address',
-                    'recipient_city',
-                    'professional_experience',
-                    'skills_and_qualifications',
-                    'contribution_expectations',
-                    'availability',
-                    'attachments',
-                    'sender_signature'
-                ],
-                'validation_rules' => [
-                    'sender_email' => ['email'],
-                    'sender_phone' => ['phone']
-                ],
-                'is_active' => true,
-            ],
+        foreach ($countries as $country) {
+            foreach ($languages as $language) {
+                // Administrative Application Templates
+                $templates[] = [
+                    'document_type' => 'administrative_application',
+                    'country' => $country,
+                    'language' => $language,
+                    'template_content' => 'Blade template for administrative application',
+                    'required_fields' => [
+                        'applicant_name',
+                        'applicant_address',
+                        'applicant_city',
+                        'recipient_title',
+                        'recipient_organization',
+                        'subject',
+                        'request_context',
+                        'request_details',
+                        'date'
+                    ],
+                    'optional_fields' => [
+                        'applicant_phone',
+                        'applicant_email',
+                        'recipient_name',
+                        'recipient_address',
+                        'recipient_city',
+                        'justification',
+                        'expected_outcome',
+                        'urgency_reason',
+                        'deadline',
+                        'contact_preference',
+                        'reference_number',
+                        'attachments',
+                        'applicant_signature',
+                        'politeness_formula_opening',
+                        'politeness_formula_closing'
+                    ],
+                    'validation_rules' => [
+                        'applicant_email' => ['email'],
+                        'applicant_phone' => ['phone'],
+                        'date' => ['date']
+                    ],
+                    'is_active' => true,
+                ];
 
-            // Internship Request Templates
-            [
-                'document_type' => 'internship_request',
-                'country' => 'SN',
-                'language' => 'fr',
-                'template_content' => 'Blade template for internship request',
-                'required_fields' => [
-                    'sender_name',
-                    'sender_address',
-                    'sender_city',
-                    'recipient_name',
-                    'recipient_organization',
-                    'subject',
-                    'student_status',
-                    'academic_program',
-                    'internship_duration',
-                    'internship_objectives'
-                ],
-                'optional_fields' => [
-                    'sender_phone',
-                    'sender_email',
-                    'recipient_title',
-                    'recipient_address',
-                    'recipient_city',
-                    'organization_interest',
-                    'skills_contribution',
-                    'supervision_requirements',
-                    'attachments',
-                    'sender_signature'
-                ],
-                'validation_rules' => [
-                    'sender_email' => ['email'],
-                    'sender_phone' => ['phone']
-                ],
-                'is_active' => true,
-            ],
+                // Motivation Letter Templates
+                $templates[] = [
+                    'document_type' => 'motivation_letter',
+                    'country' => $country,
+                    'language' => $language,
+                    'template_content' => 'Blade template for motivation letter',
+                    'required_fields' => [
+                        'applicant_name',
+                        'applicant_address',
+                        'applicant_city',
+                        'recipient_name',
+                        'recipient_organization',
+                        'position_title',
+                        'motivation_content',
+                        'date'
+                    ],
+                    'optional_fields' => [
+                        'applicant_phone',
+                        'applicant_email',
+                        'recipient_title',
+                        'recipient_address',
+                        'recipient_city',
+                        'subject',
+                        'introduction',
+                        'professional_experience',
+                        'skills_and_qualifications',
+                        'contribution_expectations',
+                        'career_objectives',
+                        'availability',
+                        'salary_expectations',
+                        'reference_number',
+                        'attachments',
+                        'applicant_signature',
+                        'politeness_formula_opening',
+                        'politeness_formula_closing'
+                    ],
+                    'validation_rules' => [
+                        'applicant_email' => ['email'],
+                        'applicant_phone' => ['phone'],
+                        'date' => ['date']
+                    ],
+                    'is_active' => true,
+                ];
 
-            // Honor Attestation Templates
-            [
-                'document_type' => 'honor_attestation',
-                'country' => 'SN',
-                'language' => 'fr',
-                'template_content' => 'Blade template for honor attestation',
-                'required_fields' => [
-                    'declarant_name',
-                    'birth_date',
-                    'birth_place',
-                    'nationality',
-                    'address',
-                    'id_type',
-                    'id_number',
-                    'attestation_content',
-                    'declaration_city'
-                ],
-                'optional_fields' => [
-                    'id_issue_date',
-                    'id_issuing_authority',
-                    'specific_declarations',
-                    'additional_commitments',
-                    'declarant_signature'
-                ],
-                'validation_rules' => [
-                    'birth_date' => ['date'],
-                    'id_issue_date' => ['date']
-                ],
-                'is_active' => true,
-            ],
+                // Internship Request Templates
+                $templates[] = [
+                    'document_type' => 'internship_request',
+                    'country' => $country,
+                    'language' => $language,
+                    'template_content' => 'Blade template for internship request',
+                    'required_fields' => [
+                        'student_name',
+                        'student_address',
+                        'student_city',
+                        'recipient_name',
+                        'recipient_organization',
+                        'institution_name',
+                        'study_program',
+                        'internship_duration',
+                        'internship_period',
+                        'internship_objectives',
+                        'date'
+                    ],
+                    'optional_fields' => [
+                        'student_phone',
+                        'student_email',
+                        'recipient_title',
+                        'recipient_address',
+                        'recipient_city',
+                        'subject',
+                        'student_status',
+                        'academic_level',
+                        'organization_interest',
+                        'skills_contribution',
+                        'supervision_requirements',
+                        'academic_supervisor',
+                        'supervisor_contact',
+                        'evaluation_requirements',
+                        'reference_number',
+                        'attachments',
+                        'student_signature',
+                        'politeness_formula_opening',
+                        'politeness_formula_closing'
+                    ],
+                    'validation_rules' => [
+                        'student_email' => ['email'],
+                        'student_phone' => ['phone'],
+                        'date' => ['date']
+                    ],
+                    'is_active' => true,
+                ];
 
-            // Complaint Letter Templates
-            [
-                'document_type' => 'complaint_letter',
-                'country' => 'SN',
-                'language' => 'fr',
-                'template_content' => 'Blade template for complaint letter',
-                'required_fields' => [
-                    'complainant_name',
-                    'complainant_address',
-                    'complainant_city',
-                    'recipient_name',
-                    'recipient_organization',
-                    'subject',
-                    'incident_description',
-                    'incident_date',
-                    'requested_action'
-                ],
-                'optional_fields' => [
-                    'complainant_phone',
-                    'complainant_email',
-                    'recipient_title',
-                    'recipient_address',
-                    'recipient_city',
-                    'incident_location',
-                    'parties_involved',
-                    'damages_or_prejudice',
-                    'evidence_description',
-                    'previous_attempts',
-                    'legal_references',
-                    'attachments',
-                    'complainant_signature'
-                ],
-                'validation_rules' => [
-                    'complainant_email' => ['email'],
-                    'complainant_phone' => ['phone'],
-                    'incident_date' => ['date']
-                ],
-                'is_active' => true,
-            ],
+                // Honor Attestation Templates
+                $templates[] = [
+                    'document_type' => 'honor_attestation',
+                    'country' => $country,
+                    'language' => $language,
+                    'template_content' => 'Blade template for honor attestation',
+                    'required_fields' => [
+                        'declarant_name',
+                        'declarant_address',
+                        'declaration_city',
+                        'birth_date',
+                        'birth_place',
+                        'nationality',
+                        'identity_document_type',
+                        'identity_document_number',
+                        'declaration_content',
+                        'date'
+                    ],
+                    'optional_fields' => [
+                        'declarant_phone',
+                        'declarant_email',
+                        'attestation_title',
+                        'profession',
+                        'id_issue_date',
+                        'id_issuing_authority',
+                        'specific_declarations',
+                        'factual_statements',
+                        'period_concerned',
+                        'witnesses',
+                        'additional_commitments',
+                        'legal_consequences',
+                        'witness_signature',
+                        'declarant_signature'
+                    ],
+                    'validation_rules' => [
+                        'declarant_email' => ['email'],
+                        'declarant_phone' => ['phone'],
+                        'birth_date' => ['date'],
+                        'id_issue_date' => ['date'],
+                        'date' => ['date']
+                    ],
+                    'is_active' => true,
+                ];
 
-            // Administrative Act Request Templates
-            [
-                'document_type' => 'administrative_act_request',
-                'country' => 'SN',
-                'language' => 'fr',
-                'template_content' => 'Blade template for administrative act request',
-                'required_fields' => [
-                    'requester_name',
-                    'requester_address',
-                    'requester_city',
-                    'recipient_name',
-                    'recipient_organization',
-                    'subject',
-                    'request_purpose',
-                    'document_type_requested',
-                    'person_concerned'
-                ],
-                'optional_fields' => [
-                    'requester_phone',
-                    'requester_email',
-                    'recipient_title',
-                    'recipient_address',
-                    'recipient_city',
-                    'relationship_to_person',
-                    'specific_details',
-                    'urgency_justification',
-                    'delivery_method',
-                    'payment_information',
-                    'attachments',
-                    'requester_signature'
-                ],
-                'validation_rules' => [
-                    'requester_email' => ['email'],
-                    'requester_phone' => ['phone']
-                ],
-                'is_active' => true,
-            ],
+                // Complaint Letter Templates
+                $templates[] = [
+                    'document_type' => 'complaint_letter',
+                    'country' => $country,
+                    'language' => $language,
+                    'template_content' => 'Blade template for complaint letter',
+                    'required_fields' => [
+                        'complainant_name',
+                        'complainant_address',
+                        'complainant_city',
+                        'recipient_title',
+                        'recipient_organization',
+                        'complaint_subject',
+                        'complaint_details',
+                        'desired_resolution',
+                        'date'
+                    ],
+                    'optional_fields' => [
+                        'complainant_phone',
+                        'complainant_email',
+                        'recipient_name',
+                        'recipient_address',
+                        'recipient_city',
+                        'incident_date',
+                        'incident_time',
+                        'incident_location',
+                        'parties_involved',
+                        'witnesses',
+                        'damages_or_prejudice',
+                        'financial_impact',
+                        'evidence_description',
+                        'previous_attempts',
+                        'urgency_justification',
+                        'compensation_requested',
+                        'deadline_expectation',
+                        'reference_number',
+                        'attachments',
+                        'complainant_signature',
+                        'politeness_formula_opening',
+                        'politeness_formula_closing'
+                    ],
+                    'validation_rules' => [
+                        'complainant_email' => ['email'],
+                        'complainant_phone' => ['phone'],
+                        'incident_date' => ['date'],
+                        'date' => ['date']
+                    ],
+                    'is_active' => true,
+                ];
 
-            // Appeal or Postponement Letter Templates
-            [
-                'document_type' => 'appeal_or_postponement_letter',
-                'country' => 'SN',
-                'language' => 'fr',
-                'template_content' => 'Blade template for appeal or postponement letter',
-                'required_fields' => [
-                    'appellant_name',
-                    'appellant_address',
-                    'appellant_city',
-                    'recipient_name',
-                    'recipient_organization',
-                    'subject',
-                    'original_decision_reference',
-                    'decision_date',
-                    'decision_description',
-                    'appeal_grounds',
-                    'requested_outcome'
-                ],
-                'optional_fields' => [
-                    'appellant_phone',
-                    'appellant_email',
-                    'recipient_title',
-                    'recipient_address',
-                    'recipient_city',
-                    'legal_basis',
-                    'factual_arguments',
-                    'new_evidence',
-                    'deadline_considerations',
-                    'attachments',
-                    'appellant_signature'
-                ],
-                'validation_rules' => [
-                    'appellant_email' => ['email'],
-                    'appellant_phone' => ['phone'],
-                    'decision_date' => ['date']
-                ],
-                'is_active' => true,
-            ],
+                // Administrative Act Request Templates
+                $templates[] = [
+                    'document_type' => 'administrative_act_request',
+                    'country' => $country,
+                    'language' => $language,
+                    'template_content' => 'Blade template for administrative act request',
+                    'required_fields' => [
+                        'requester_name',
+                        'requester_address',
+                        'requester_city',
+                        'recipient_title',
+                        'recipient_organization',
+                        'request_purpose',
+                        'document_type_requested',
+                        'person_concerned',
+                        'justification',
+                        'date'
+                    ],
+                    'optional_fields' => [
+                        'requester_phone',
+                        'requester_email',
+                        'recipient_name',
+                        'recipient_address',
+                        'recipient_city',
+                        'subject',
+                        'person_birth_date',
+                        'person_birth_place',
+                        'relationship_to_person',
+                        'specific_details',
+                        'period_concerned',
+                        'urgency_justification',
+                        'delivery_method',
+                        'delivery_address',
+                        'payment_information',
+                        'contact_person',
+                        'contact_phone',
+                        'reference_number',
+                        'attachments',
+                        'requester_signature',
+                        'politeness_formula_opening',
+                        'politeness_formula_closing'
+                    ],
+                    'validation_rules' => [
+                        'requester_email' => ['email'],
+                        'requester_phone' => ['phone'],
+                        'contact_phone' => ['phone'],
+                        'person_birth_date' => ['date'],
+                        'date' => ['date']
+                    ],
+                    'is_active' => true,
+                ];
 
-            // Generic Administrative Correspondence Templates
-            [
-                'document_type' => 'generic_administrative_correspondence',
-                'country' => 'SN',
-                'language' => 'fr',
-                'template_content' => 'Blade template for generic administrative correspondence',
-                'required_fields' => [
-                    'sender_name',
-                    'sender_address',
-                    'sender_city',
-                    'recipient_name',
-                    'recipient_organization',
-                    'subject',
-                    'correspondence_content',
-                    'main_message'
-                ],
-                'optional_fields' => [
-                    'sender_phone',
-                    'sender_email',
-                    'recipient_title',
-                    'recipient_address',
-                    'recipient_city',
-                    'supporting_details',
-                    'requested_action',
-                    'follow_up_information',
-                    'attachments',
-                    'sender_signature'
-                ],
-                'validation_rules' => [
-                    'sender_email' => ['email'],
-                    'sender_phone' => ['phone']
-                ],
-                'is_active' => true,
-            ],
-        ];
+                // Appeal or Postponement Letter Templates
+                $templates[] = [
+                    'document_type' => 'appeal_or_postponement_letter',
+                    'country' => $country,
+                    'language' => $language,
+                    'template_content' => 'Blade template for appeal or postponement letter',
+                    'required_fields' => [
+                        'appellant_name',
+                        'appellant_address',
+                        'appellant_city',
+                        'recipient_title',
+                        'recipient_organization',
+                        'original_decision_reference',
+                        'decision_description',
+                        'appeal_grounds',
+                        'requested_outcome',
+                        'date'
+                    ],
+                    'optional_fields' => [
+                        'appellant_phone',
+                        'appellant_email',
+                        'recipient_name',
+                        'recipient_address',
+                        'recipient_city',
+                        'subject',
+                        'original_decision_date',
+                        'decision_authority',
+                        'notification_date',
+                        'notification_method',
+                        'legal_basis',
+                        'factual_arguments',
+                        'procedural_irregularities',
+                        'new_evidence',
+                        'circumstances_change',
+                        'alternative_solution',
+                        'deadline_considerations',
+                        'interim_measures',
+                        'reference_number',
+                        'attachments',
+                        'appellant_signature',
+                        'politeness_formula_opening',
+                        'politeness_formula_closing'
+                    ],
+                    'validation_rules' => [
+                        'appellant_email' => ['email'],
+                        'appellant_phone' => ['phone'],
+                        'original_decision_date' => ['date'],
+                        'notification_date' => ['date'],
+                        'date' => ['date']
+                    ],
+                    'is_active' => true,
+                ];
+
+                // Generic Administrative Correspondence Templates
+                $templates[] = [
+                    'document_type' => 'generic_administrative_correspondence',
+                    'country' => $country,
+                    'language' => $language,
+                    'template_content' => 'Blade template for generic administrative correspondence',
+                    'required_fields' => [
+                        'sender_name',
+                        'sender_address',
+                        'sender_city',
+                        'recipient_title',
+                        'recipient_organization',
+                        'subject',
+                        'message_content',
+                        'date'
+                    ],
+                    'optional_fields' => [
+                        'sender_phone',
+                        'sender_email',
+                        'sender_function',
+                        'sender_organization',
+                        'recipient_name',
+                        'recipient_address',
+                        'recipient_city',
+                        'context',
+                        'supporting_details',
+                        'background_information',
+                        'requested_action',
+                        'deadline',
+                        'follow_up_information',
+                        'contact_information',
+                        'next_steps',
+                        'additional_notes',
+                        'copy_to',
+                        'reference_number',
+                        'your_reference',
+                        'attachments',
+                        'sender_signature',
+                        'politeness_formula_opening',
+                        'politeness_formula_closing'
+                    ],
+                    'validation_rules' => [
+                        'sender_email' => ['email'],
+                        'sender_phone' => ['phone'],
+                        'date' => ['date']
+                    ],
+                    'is_active' => true,
+                ];
+            }
+        }
+
+        return $templates;
     }
 }

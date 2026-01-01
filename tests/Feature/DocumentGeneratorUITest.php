@@ -59,7 +59,7 @@ it('shows required fields when document type is selected', function () {
     Livewire::test(DocumentGenerator::class)
         ->call('handleDocumentTypeChange', 'ADMINISTRATIVE_APPLICATION')
         ->assertSet('showFieldsForm', true)
-        ->assertCount('requiredFields', 6); // Administrative application has 6 required fields
+        ->assertCount('requiredFields', 9); // Administrative application has 9 required fields including date
 });
 
 it('validates required fields before generation', function () {
@@ -70,6 +70,7 @@ it('validates required fields before generation', function () {
         ->set('document_type', 'ADMINISTRATIVE_APPLICATION')
         ->set('tone_level', 'OFFICIAL')
         ->set('language', 'fr')
+        ->call('handleDocumentTypeChange', 'ADMINISTRATIVE_APPLICATION') // This populates requiredFields
         ->call('validateFields');
 
     // Should have validation errors for missing required fields

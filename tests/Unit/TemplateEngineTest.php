@@ -36,14 +36,15 @@ class TemplateEngineTest extends TestCase
     public function test_can_render_administrative_application_template()
     {
         $data = [
-            'sender_name' => 'Jean Dupont',
-            'sender_address' => '123 Rue de la Paix',
-            'sender_city' => 'Dakar',
-            'recipient_name' => 'Monsieur le Directeur',
+            'applicant_name' => 'Jean Dupont',
+            'applicant_address' => '123 Rue de la Paix',
+            'applicant_city' => 'Dakar',
+            'recipient_title' => 'Monsieur le Directeur',
             'recipient_organization' => 'Ministère de l\'Intérieur',
             'subject' => 'Demande de carte d\'identité',
             'request_context' => 'Je sollicite par la présente une carte d\'identité nationale.',
-            'request_details' => 'Ma précédente carte a été perdue lors d\'un voyage.'
+            'request_details' => 'Ma précédente carte a été perdue lors d\'un voyage.',
+            'date' => '2024-01-15'
         ];
 
         $result = $this->templateEngine->renderTemplate('administrative_application', $data, 'SN', 'fr');
@@ -87,15 +88,16 @@ class TemplateEngineTest extends TestCase
     public function test_can_validate_template_data()
     {
         $validData = [
-            'sender_name' => 'Jean Dupont',
-            'sender_address' => '123 Rue de la Paix',
-            'sender_city' => 'Dakar',
-            'recipient_name' => 'Monsieur le Directeur',
+            'applicant_name' => 'Jean Dupont',
+            'applicant_address' => '123 Rue de la Paix',
+            'applicant_city' => 'Dakar',
+            'recipient_title' => 'Monsieur le Directeur',
             'recipient_organization' => 'Ministère de l\'Intérieur',
             'subject' => 'Demande de carte d\'identité',
             'request_context' => 'Je sollicite par la présente une carte d\'identité nationale.',
             'request_details' => 'Ma précédente carte a été perdue lors d\'un voyage.',
-            'sender_email' => 'jean@example.com'
+            'date' => '2024-01-15',
+            'applicant_email' => 'jean@example.com'
         ];
 
         $errors = $this->templateEngine->validateTemplateData('administrative_application', $validData, 'SN', 'fr');
@@ -106,15 +108,16 @@ class TemplateEngineTest extends TestCase
     public function test_validation_catches_invalid_email()
     {
         $invalidData = [
-            'sender_name' => 'Jean Dupont',
-            'sender_address' => '123 Rue de la Paix',
-            'sender_city' => 'Dakar',
-            'recipient_name' => 'Monsieur le Directeur',
+            'applicant_name' => 'Jean Dupont',
+            'applicant_address' => '123 Rue de la Paix',
+            'applicant_city' => 'Dakar',
+            'recipient_title' => 'Monsieur le Directeur',
             'recipient_organization' => 'Ministère de l\'Intérieur',
             'subject' => 'Demande de carte d\'identité',
             'request_context' => 'Je sollicite par la présente une carte d\'identité nationale.',
             'request_details' => 'Ma précédente carte a été perdue lors d\'un voyage.',
-            'sender_email' => 'invalid-email'
+            'date' => '2024-01-15',
+            'applicant_email' => 'invalid-email'
         ];
 
         $errors = $this->templateEngine->validateTemplateData('administrative_application', $invalidData, 'SN', 'fr');
@@ -141,14 +144,15 @@ class TemplateEngineTest extends TestCase
     public function test_can_render_template_for_export_without_html_entities()
     {
         $data = [
-            'sender_name' => 'Jean Dupont',
-            'sender_address' => '123 Rue de la Paix',
-            'sender_city' => 'Dakar',
-            'recipient_name' => 'Monsieur le Directeur',
+            'applicant_name' => 'Jean Dupont',
+            'applicant_address' => '123 Rue de la Paix',
+            'applicant_city' => 'Dakar',
+            'recipient_title' => 'Monsieur le Directeur',
             'recipient_organization' => 'Ministère de l\'Intérieur',
             'subject' => 'Demande de carte d\'identité',
             'request_context' => 'Je sollicite par la présente une carte d\'identité nationale.',
-            'request_details' => 'Ma précédente carte a été perdue lors d\'un voyage.'
+            'request_details' => 'Ma précédente carte a été perdue lors d\'un voyage.',
+            'date' => '2024-01-15'
         ];
 
         $result = $this->templateEngine->renderTemplateForExport('administrative_application', $data, 'SN', 'fr');
@@ -165,14 +169,15 @@ class TemplateEngineTest extends TestCase
     public function test_sanitizes_output_correctly()
     {
         $data = [
-            'sender_name' => 'Jean Dupont',
-            'sender_address' => '123 Rue de la Paix',
-            'sender_city' => 'Dakar',
-            'recipient_name' => 'Monsieur le Directeur',
+            'applicant_name' => 'Jean Dupont',
+            'applicant_address' => '123 Rue de la Paix',
+            'applicant_city' => 'Dakar',
+            'recipient_title' => 'Monsieur le Directeur',
             'recipient_organization' => 'Ministère de l\'Intérieur',
             'subject' => 'Demande de carte d\'identité',
             'request_context' => 'Je sollicite par la présente une carte d\'identité nationale.',
-            'request_details' => 'Ma précédente carte a été perdue lors d\'un voyage.'
+            'request_details' => 'Ma précédente carte a été perdue lors d\'un voyage.',
+            'date' => '2024-01-15'
         ];
 
         $result = $this->templateEngine->renderTemplate('administrative_application', $data, 'SN', 'fr');

@@ -133,7 +133,7 @@ Ce plan d'implémentation utilise Laravel 12, MariaDB, SheafUI (shadcn/ui) et le
   - Tester l'affichage des erreurs et les mécanismes de feedback
   - _Requirements: 2.1, 2.2_
 
-- [ ] 10. Implémentation du support complet des types de documents
+- [x] 10. Implémentation du support complet des types de documents
   - Créer les templates spécifiques pour les 8 types de documents
   - Ajouter les règles de validation spécifiques par type
   - Implémenter le rendu des sections spécifiques par type

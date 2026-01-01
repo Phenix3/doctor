@@ -88,11 +88,22 @@ class DocumentRequest extends FormRequest
                 $rules = array_merge($rules, [
                     'fields.applicant_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.applicant_address' => ['required', 'string', 'max:255'],
+                    'fields.applicant_city' => ['required', 'string', 'max:100'],
                     'fields.recipient_title' => ['required', 'string', 'max:100'],
+                    'fields.recipient_name' => ['nullable', 'string', 'max:100'],
+                    'fields.recipient_organization' => ['required', 'string', 'max:150'],
                     'fields.subject' => ['required', 'string', 'max:200', $neutralityRule],
+                    'fields.request_context' => ['required', 'string', 'max:500', $neutralityRule],
                     'fields.request_details' => ['required', 'string', 'max:2000', $neutralityRule],
                     'fields.applicant_phone' => ['nullable', 'string', 'regex:/^[\+]?[0-9\s\-\(\)]{8,20}$/'],
                     'fields.applicant_email' => ['nullable', 'email', 'max:100'],
+                    'fields.justification' => ['nullable', 'string', 'max:1500', $neutralityRule],
+                    'fields.expected_outcome' => ['nullable', 'string', 'max:500', $neutralityRule],
+                    'fields.urgency_reason' => ['nullable', 'string', 'max:500', $neutralityRule],
+                    'fields.deadline' => ['nullable', 'string', 'max:100'],
+                    'fields.contact_preference' => ['nullable', 'string', 'max:200'],
+                    'fields.reference_number' => ['nullable', 'string', 'max:50'],
+                    'fields.attachments' => ['nullable', 'string', 'max:500'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -101,11 +112,23 @@ class DocumentRequest extends FormRequest
                 $rules = array_merge($rules, [
                     'fields.applicant_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.applicant_address' => ['required', 'string', 'max:255'],
+                    'fields.applicant_city' => ['required', 'string', 'max:100'],
                     'fields.recipient_name' => ['required', 'string', 'max:100'],
                     'fields.recipient_organization' => ['required', 'string', 'max:150'],
                     'fields.position_title' => ['required', 'string', 'max:100'],
+                    'fields.subject' => ['nullable', 'string', 'max:200', $neutralityRule],
+                    'fields.introduction' => ['nullable', 'string', 'max:500', $neutralityRule],
                     'fields.motivation_content' => ['required', 'string', 'max:3000', $neutralityRule],
-                    'fields.qualifications' => ['nullable', 'string', 'max:1500', $neutralityRule],
+                    'fields.professional_experience' => ['nullable', 'string', 'max:2000', $neutralityRule],
+                    'fields.skills_and_qualifications' => ['nullable', 'string', 'max:1500', $neutralityRule],
+                    'fields.contribution_expectations' => ['nullable', 'string', 'max:1000', $neutralityRule],
+                    'fields.career_objectives' => ['nullable', 'string', 'max:800', $neutralityRule],
+                    'fields.availability' => ['nullable', 'string', 'max:200'],
+                    'fields.salary_expectations' => ['nullable', 'string', 'max:200'],
+                    'fields.applicant_phone' => ['nullable', 'string', 'regex:/^[\+]?[0-9\s\-\(\)]{8,20}$/'],
+                    'fields.applicant_email' => ['nullable', 'email', 'max:100'],
+                    'fields.reference_number' => ['nullable', 'string', 'max:50'],
+                    'fields.attachments' => ['nullable', 'string', 'max:500'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -114,11 +137,27 @@ class DocumentRequest extends FormRequest
                 $rules = array_merge($rules, [
                     'fields.student_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.student_address' => ['required', 'string', 'max:255'],
+                    'fields.student_city' => ['required', 'string', 'max:100'],
+                    'fields.recipient_name' => ['required', 'string', 'max:100'],
+                    'fields.recipient_organization' => ['required', 'string', 'max:150'],
                     'fields.institution_name' => ['required', 'string', 'max:150'],
                     'fields.study_program' => ['required', 'string', 'max:100'],
                     'fields.internship_duration' => ['required', 'string', 'max:50'],
                     'fields.internship_period' => ['required', 'string', 'max:100'],
-                    'fields.supervisor_name' => ['nullable', 'string', 'max:100'],
+                    'fields.internship_objectives' => ['required', 'string', 'max:1500', $neutralityRule],
+                    'fields.student_status' => ['nullable', 'string', 'max:100'],
+                    'fields.academic_level' => ['nullable', 'string', 'max:100'],
+                    'fields.organization_interest' => ['nullable', 'string', 'max:1000', $neutralityRule],
+                    'fields.skills_contribution' => ['nullable', 'string', 'max:1000', $neutralityRule],
+                    'fields.supervision_requirements' => ['nullable', 'string', 'max:800'],
+                    'fields.academic_supervisor' => ['nullable', 'string', 'max:100'],
+                    'fields.supervisor_contact' => ['nullable', 'string', 'max:200'],
+                    'fields.evaluation_requirements' => ['nullable', 'string', 'max:500'],
+                    'fields.student_phone' => ['nullable', 'string', 'regex:/^[\+]?[0-9\s\-\(\)]{8,20}$/'],
+                    'fields.student_email' => ['nullable', 'email', 'max:100'],
+                    'fields.subject' => ['nullable', 'string', 'max:200', $neutralityRule],
+                    'fields.reference_number' => ['nullable', 'string', 'max:50'],
+                    'fields.attachments' => ['nullable', 'string', 'max:500'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -127,9 +166,26 @@ class DocumentRequest extends FormRequest
                 $rules = array_merge($rules, [
                     'fields.declarant_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.declarant_address' => ['required', 'string', 'max:255'],
-                    'fields.declaration_content' => ['required', 'string', 'max:2000', $neutralityRule],
+                    'fields.declaration_city' => ['required', 'string', 'max:100'],
+                    'fields.birth_date' => ['required', 'date', 'date_format:Y-m-d', 'before:today'],
+                    'fields.birth_place' => ['required', 'string', 'max:100'],
+                    'fields.nationality' => ['required', 'string', 'max:50'],
                     'fields.identity_document_type' => ['required', 'string', 'max:50'],
                     'fields.identity_document_number' => ['required', 'string', 'max:50'],
+                    'fields.declaration_content' => ['required', 'string', 'max:2000', $neutralityRule],
+                    'fields.attestation_title' => ['nullable', 'string', 'max:200'],
+                    'fields.profession' => ['nullable', 'string', 'max:100'],
+                    'fields.id_issue_date' => ['nullable', 'date', 'date_format:Y-m-d', 'before_or_equal:today'],
+                    'fields.id_issuing_authority' => ['nullable', 'string', 'max:150'],
+                    'fields.specific_declarations' => ['nullable', 'string', 'max:1500', $neutralityRule],
+                    'fields.factual_statements' => ['nullable', 'string', 'max:1500', $neutralityRule],
+                    'fields.period_concerned' => ['nullable', 'string', 'max:200'],
+                    'fields.witnesses' => ['nullable', 'string', 'max:500'],
+                    'fields.additional_commitments' => ['nullable', 'string', 'max:1000', $neutralityRule],
+                    'fields.legal_consequences' => ['nullable', 'string', 'max:500'],
+                    'fields.witness_signature' => ['nullable', 'string', 'max:200'],
+                    'fields.declarant_phone' => ['nullable', 'string', 'regex:/^[\+]?[0-9\s\-\(\)]{8,20}$/'],
+                    'fields.declarant_email' => ['nullable', 'email', 'max:100'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -138,11 +194,29 @@ class DocumentRequest extends FormRequest
                 $rules = array_merge($rules, [
                     'fields.complainant_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.complainant_address' => ['required', 'string', 'max:255'],
+                    'fields.complainant_city' => ['required', 'string', 'max:100'],
                     'fields.recipient_title' => ['required', 'string', 'max:100'],
+                    'fields.recipient_name' => ['nullable', 'string', 'max:100'],
+                    'fields.recipient_organization' => ['required', 'string', 'max:150'],
                     'fields.complaint_subject' => ['required', 'string', 'max:200', $neutralityRule],
                     'fields.complaint_details' => ['required', 'string', 'max:2500', $neutralityRule],
-                    'fields.incident_date' => ['nullable', 'date', 'date_format:Y-m-d'],
-                    'fields.desired_resolution' => ['nullable', 'string', 'max:1000', $neutralityRule],
+                    'fields.incident_date' => ['nullable', 'date', 'date_format:Y-m-d', 'before_or_equal:today'],
+                    'fields.incident_time' => ['nullable', 'string', 'max:20'],
+                    'fields.incident_location' => ['nullable', 'string', 'max:200'],
+                    'fields.parties_involved' => ['nullable', 'string', 'max:1000'],
+                    'fields.witnesses' => ['nullable', 'string', 'max:800'],
+                    'fields.damages_or_prejudice' => ['nullable', 'string', 'max:1500', $neutralityRule],
+                    'fields.financial_impact' => ['nullable', 'string', 'max:500'],
+                    'fields.evidence_description' => ['nullable', 'string', 'max:1000'],
+                    'fields.previous_attempts' => ['nullable', 'string', 'max:1000', $neutralityRule],
+                    'fields.urgency_justification' => ['nullable', 'string', 'max:500', $neutralityRule],
+                    'fields.desired_resolution' => ['required', 'string', 'max:1000', $neutralityRule],
+                    'fields.compensation_requested' => ['nullable', 'string', 'max:500'],
+                    'fields.deadline_expectation' => ['nullable', 'string', 'max:200'],
+                    'fields.complainant_phone' => ['nullable', 'string', 'regex:/^[\+]?[0-9\s\-\(\)]{8,20}$/'],
+                    'fields.complainant_email' => ['nullable', 'email', 'max:100'],
+                    'fields.reference_number' => ['nullable', 'string', 'max:50'],
+                    'fields.attachments' => ['nullable', 'string', 'max:500'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -151,9 +225,30 @@ class DocumentRequest extends FormRequest
                 $rules = array_merge($rules, [
                     'fields.requester_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.requester_address' => ['required', 'string', 'max:255'],
-                    'fields.act_type' => ['required', 'string', 'max:100'],
+                    'fields.requester_city' => ['required', 'string', 'max:100'],
+                    'fields.recipient_title' => ['required', 'string', 'max:100'],
+                    'fields.recipient_name' => ['nullable', 'string', 'max:100'],
+                    'fields.recipient_organization' => ['required', 'string', 'max:150'],
+                    'fields.subject' => ['nullable', 'string', 'max:200', $neutralityRule],
+                    'fields.request_purpose' => ['required', 'string', 'max:500', $neutralityRule],
+                    'fields.document_type_requested' => ['required', 'string', 'max:100'],
+                    'fields.person_concerned' => ['required', 'string', 'max:100'],
+                    'fields.person_birth_date' => ['nullable', 'date', 'date_format:Y-m-d', 'before:today'],
+                    'fields.person_birth_place' => ['nullable', 'string', 'max:100'],
+                    'fields.relationship_to_person' => ['nullable', 'string', 'max:100'],
+                    'fields.specific_details' => ['nullable', 'string', 'max:1000', $neutralityRule],
+                    'fields.period_concerned' => ['nullable', 'string', 'max:200'],
                     'fields.justification' => ['required', 'string', 'max:2000', $neutralityRule],
-                    'fields.supporting_documents' => ['nullable', 'string', 'max:500'],
+                    'fields.urgency_justification' => ['nullable', 'string', 'max:500', $neutralityRule],
+                    'fields.delivery_method' => ['nullable', 'string', 'max:100'],
+                    'fields.delivery_address' => ['nullable', 'string', 'max:255'],
+                    'fields.payment_information' => ['nullable', 'string', 'max:300'],
+                    'fields.contact_person' => ['nullable', 'string', 'max:100'],
+                    'fields.contact_phone' => ['nullable', 'string', 'regex:/^[\+]?[0-9\s\-\(\)]{8,20}$/'],
+                    'fields.requester_phone' => ['nullable', 'string', 'regex:/^[\+]?[0-9\s\-\(\)]{8,20}$/'],
+                    'fields.requester_email' => ['nullable', 'email', 'max:100'],
+                    'fields.reference_number' => ['nullable', 'string', 'max:50'],
+                    'fields.attachments' => ['nullable', 'string', 'max:500'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -162,10 +257,31 @@ class DocumentRequest extends FormRequest
                 $rules = array_merge($rules, [
                     'fields.appellant_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.appellant_address' => ['required', 'string', 'max:255'],
+                    'fields.appellant_city' => ['required', 'string', 'max:100'],
+                    'fields.recipient_title' => ['required', 'string', 'max:100'],
+                    'fields.recipient_name' => ['nullable', 'string', 'max:100'],
+                    'fields.recipient_organization' => ['required', 'string', 'max:150'],
+                    'fields.subject' => ['nullable', 'string', 'max:200', $neutralityRule],
                     'fields.original_decision_reference' => ['required', 'string', 'max:100'],
+                    'fields.original_decision_date' => ['nullable', 'date', 'date_format:Y-m-d', 'before_or_equal:today'],
+                    'fields.decision_authority' => ['nullable', 'string', 'max:150'],
+                    'fields.decision_description' => ['required', 'string', 'max:1500', $neutralityRule],
+                    'fields.notification_date' => ['nullable', 'date', 'date_format:Y-m-d', 'before_or_equal:today'],
+                    'fields.notification_method' => ['nullable', 'string', 'max:100'],
                     'fields.appeal_grounds' => ['required', 'string', 'max:2500', $neutralityRule],
-                    'fields.requested_action' => ['required', 'string', 'max:500', $neutralityRule],
-                    'fields.original_decision_date' => ['nullable', 'date', 'date_format:Y-m-d'],
+                    'fields.legal_basis' => ['nullable', 'string', 'max:1000'],
+                    'fields.factual_arguments' => ['nullable', 'string', 'max:2000', $neutralityRule],
+                    'fields.procedural_irregularities' => ['nullable', 'string', 'max:1500', $neutralityRule],
+                    'fields.new_evidence' => ['nullable', 'string', 'max:1500'],
+                    'fields.circumstances_change' => ['nullable', 'string', 'max:1000', $neutralityRule],
+                    'fields.requested_outcome' => ['required', 'string', 'max:500', $neutralityRule],
+                    'fields.alternative_solution' => ['nullable', 'string', 'max:800', $neutralityRule],
+                    'fields.deadline_considerations' => ['nullable', 'string', 'max:500'],
+                    'fields.interim_measures' => ['nullable', 'string', 'max:800', $neutralityRule],
+                    'fields.appellant_phone' => ['nullable', 'string', 'regex:/^[\+]?[0-9\s\-\(\)]{8,20}$/'],
+                    'fields.appellant_email' => ['nullable', 'email', 'max:100'],
+                    'fields.reference_number' => ['nullable', 'string', 'max:50'],
+                    'fields.attachments' => ['nullable', 'string', 'max:500'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -174,9 +290,29 @@ class DocumentRequest extends FormRequest
                 $rules = array_merge($rules, [
                     'fields.sender_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-ZÀ-ÿ\s\-\'\.]+$/u'],
                     'fields.sender_address' => ['required', 'string', 'max:255'],
+                    'fields.sender_city' => ['required', 'string', 'max:100'],
                     'fields.recipient_title' => ['required', 'string', 'max:100'],
+                    'fields.recipient_name' => ['nullable', 'string', 'max:100'],
+                    'fields.recipient_organization' => ['required', 'string', 'max:150'],
                     'fields.subject' => ['required', 'string', 'max:200', $neutralityRule],
                     'fields.message_content' => ['required', 'string', 'max:2500', $neutralityRule],
+                    'fields.sender_function' => ['nullable', 'string', 'max:100'],
+                    'fields.sender_organization' => ['nullable', 'string', 'max:150'],
+                    'fields.context' => ['nullable', 'string', 'max:1000', $neutralityRule],
+                    'fields.supporting_details' => ['nullable', 'string', 'max:1500', $neutralityRule],
+                    'fields.background_information' => ['nullable', 'string', 'max:1200', $neutralityRule],
+                    'fields.requested_action' => ['nullable', 'string', 'max:800', $neutralityRule],
+                    'fields.deadline' => ['nullable', 'string', 'max:200'],
+                    'fields.follow_up_information' => ['nullable', 'string', 'max:800'],
+                    'fields.contact_information' => ['nullable', 'string', 'max:300'],
+                    'fields.next_steps' => ['nullable', 'string', 'max:600'],
+                    'fields.additional_notes' => ['nullable', 'string', 'max:800'],
+                    'fields.copy_to' => ['nullable', 'string', 'max:300'],
+                    'fields.sender_phone' => ['nullable', 'string', 'regex:/^[\+]?[0-9\s\-\(\)]{8,20}$/'],
+                    'fields.sender_email' => ['nullable', 'email', 'max:100'],
+                    'fields.reference_number' => ['nullable', 'string', 'max:50'],
+                    'fields.your_reference' => ['nullable', 'string', 'max:50'],
+                    'fields.attachments' => ['nullable', 'string', 'max:500'],
                     'fields.date' => ['required', 'date', 'date_format:Y-m-d'],
                 ]);
                 break;
@@ -345,35 +481,36 @@ class DocumentRequest extends FormRequest
     {
         $requiredFields = [
             'ADMINISTRATIVE_APPLICATION' => [
-                'applicant_name', 'applicant_address', 'recipient_title', 
-                'subject', 'request_details', 'date'
+                'applicant_name', 'applicant_address', 'applicant_city', 'recipient_title', 
+                'recipient_organization', 'subject', 'request_context', 'request_details', 'date'
             ],
             'MOTIVATION_LETTER' => [
-                'applicant_name', 'applicant_address', 'recipient_name', 
+                'applicant_name', 'applicant_address', 'applicant_city', 'recipient_name', 
                 'recipient_organization', 'position_title', 'motivation_content', 'date'
             ],
             'INTERNSHIP_REQUEST' => [
-                'student_name', 'student_address', 'institution_name', 
-                'study_program', 'internship_duration', 'internship_period', 'date'
+                'student_name', 'student_address', 'student_city', 'recipient_name', 'recipient_organization',
+                'institution_name', 'study_program', 'internship_duration', 'internship_period', 
+                'internship_objectives', 'date'
             ],
             'HONOR_ATTESTATION' => [
-                'declarant_name', 'declarant_address', 'declaration_content', 
-                'identity_document_type', 'identity_document_number', 'date'
+                'declarant_name', 'declarant_address', 'declaration_city', 'birth_date', 'birth_place',
+                'nationality', 'identity_document_type', 'identity_document_number', 'declaration_content', 'date'
             ],
             'COMPLAINT_LETTER' => [
-                'complainant_name', 'complainant_address', 'recipient_title', 
-                'complaint_subject', 'complaint_details', 'date'
+                'complainant_name', 'complainant_address', 'complainant_city', 'recipient_title', 
+                'recipient_organization', 'complaint_subject', 'complaint_details', 'desired_resolution', 'date'
             ],
             'ADMINISTRATIVE_ACT_REQUEST' => [
-                'requester_name', 'requester_address', 'act_type', 
-                'justification', 'date'
+                'requester_name', 'requester_address', 'requester_city', 'recipient_title', 'recipient_organization',
+                'request_purpose', 'document_type_requested', 'person_concerned', 'justification', 'date'
             ],
             'APPEAL_OR_POSTPONEMENT_LETTER' => [
-                'appellant_name', 'appellant_address', 'original_decision_reference', 
-                'appeal_grounds', 'requested_action', 'date'
+                'appellant_name', 'appellant_address', 'appellant_city', 'recipient_title', 'recipient_organization',
+                'original_decision_reference', 'decision_description', 'appeal_grounds', 'requested_outcome', 'date'
             ],
             'GENERIC_ADMINISTRATIVE_CORRESPONDENCE' => [
-                'sender_name', 'sender_address', 'recipient_title', 
+                'sender_name', 'sender_address', 'sender_city', 'recipient_title', 'recipient_organization',
                 'subject', 'message_content', 'date'
             ],
         ];

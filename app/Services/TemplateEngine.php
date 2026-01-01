@@ -31,6 +31,10 @@ class TemplateEngine
             throw new InvalidArgumentException("Missing required fields: " . implode(', ', $missingFields));
         }
 
+        // Add country and tone level to data for template processing
+        $data['country'] = $country;
+        $data['language'] = $language;
+        
         // Get the Blade template path
         $templatePath = $this->getBladeTemplatePath($documentType);
         
