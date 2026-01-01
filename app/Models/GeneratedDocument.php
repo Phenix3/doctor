@@ -110,6 +110,19 @@ class GeneratedDocument extends Model
     }
 
     /**
+     * Convert to DocumentGenerationResult
+     */
+    public function toDocumentGenerationResult(): \App\Data\DocumentGenerationResult
+    {
+        return \App\Data\DocumentGenerationResult::success(
+            $this->content,
+            $this->session_id,
+            (string) $this->id,
+            $this->metadata ?? []
+        );
+    }
+
+    /**
      * Generate unique session ID
      */
     public static function generateSessionId(): string

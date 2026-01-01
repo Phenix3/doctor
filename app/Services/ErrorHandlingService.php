@@ -419,7 +419,7 @@ class ErrorHandlingService
     /**
      * Check if an exception should be reported to external services
      */
-    public function shouldReport(Exception $exception): bool
+    public function shouldReport(\Throwable $exception): bool
     {
         // Don't report validation errors or user errors
         if ($exception instanceof ValidationException ||

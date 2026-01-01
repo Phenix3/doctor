@@ -29,6 +29,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
     Route::get('/document-generator', DocumentGenerator::class)->name('document-generator');
     Route::get('/settings/account', Account::class)->name('settings.account');
+    
+    // Document download route
+    Route::get('/documents/download/{session}/{document}', [App\Http\Controllers\DocumentController::class, 'download'])
+        ->name('documents.download');
 });
 
 Route::middleware(['auth'])->group(function () {
