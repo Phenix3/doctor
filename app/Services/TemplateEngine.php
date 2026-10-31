@@ -6,12 +6,12 @@ use App\Enums\DocumentType;
 use App\Models\DocumentTemplate;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
-use Illuminate\View\View as ViewInstance;
 use InvalidArgumentException;
 
 class TemplateEngine
 {
     private const CACHE_PREFIX = 'document_template_';
+
     private const CACHE_TTL = 3600; // 1 hour
 
     /**
@@ -20,27 +20,27 @@ class TemplateEngine
     public function renderTemplate(string $documentType, array $data, string $country = 'SN', string $language = 'fr'): string
     {
         $template = $this->getTemplate($documentType, $country, $language);
-        
-        if (!$template) {
+
+        if (! $template) {
             throw new InvalidArgumentException("Template not found for document type: {$documentType}, country: {$country}, language: {$language}");
         }
 
         // Check if all required fields are provided
         $missingFields = $template->getMissingRequiredFields($data);
-        if (!empty($missingFields)) {
-            throw new InvalidArgumentException("Missing required fields: " . implode(', ', $missingFields));
+        if (! empty($missingFields)) {
+            throw new InvalidArgumentException('Missing required fields: '.implode(', ', $missingFields));
         }
 
         // Add country and tone level to data for template processing
         $data['country'] = $country;
         $data['language'] = $language;
-        
+
         // Get the Blade template path
         $templatePath = $this->getBladeTemplatePath($documentType);
-        
+
         // Render the template with data
         $renderedContent = View::make($templatePath, $data)->render();
-        
+
         // Clean up the rendered content
         return $this->sanitizeOutput($renderedContent);
     }
@@ -51,7 +51,7 @@ class TemplateEngine
     public function renderTemplateForExport(string $documentType, array $data, string $country = 'SN', string $language = 'fr'): string
     {
         $content = $this->renderTemplate($documentType, $data, $country, $language);
-        
+
         // Decode HTML entities for final export
         return html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
@@ -62,7 +62,7 @@ class TemplateEngine
     public function getTemplate(string $documentType, string $country = 'SN', string $language = 'fr'): ?DocumentTemplate
     {
         $cacheKey = $this->getCacheKey($documentType, $country, $language);
-        
+
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($documentType, $country, $language) {
             return DocumentTemplate::getTemplate($documentType, $country, $language);
         });
@@ -80,16 +80,16 @@ class TemplateEngine
     /**
      * Clear template cache
      */
-    public function clearTemplateCache(string $documentType = null, string $country = null, string $language = null): void
+    public function clearTemplateCache(?string $documentType = null, ?string $country = null, ?string $language = null): void
     {
         if ($documentType && $country && $language) {
             $cacheKey = $this->getCacheKey($documentType, $country, $language);
             Cache::forget($cacheKey);
         } else {
             // Clear all template caches
-            $pattern = self::CACHE_PREFIX . '*';
+            $pattern = self::CACHE_PREFIX.'*';
             $keys = Cache::getRedis()->keys($pattern);
-            if (!empty($keys)) {
+            if (! empty($keys)) {
                 Cache::getRedis()->del($keys);
             }
         }
@@ -100,7 +100,7 @@ class TemplateEngine
      */
     public function getSupportedDocumentTypes(): array
     {
-        return array_keys(DocumentType::toArray());
+        return array_values(DocumentType::toArray());
     }
 
     /**
@@ -108,7 +108,7 @@ class TemplateEngine
      */
     public function isDocumentTypeSupported(string $documentType): bool
     {
-        return in_array($documentType, array_keys(DocumentType::toArray()));
+        return in_array($documentType, array_values(DocumentType::toArray()));
     }
 
     /**
@@ -127,7 +127,7 @@ class TemplateEngine
             'generic_administrative_correspondence' => 'templates.generic_administrative_correspondence',
         ];
 
-        if (!isset($templateMap[$documentType])) {
+        if (! isset($templateMap[$documentType])) {
             throw new InvalidArgumentException("No Blade template found for document type: {$documentType}");
         }
 
@@ -139,7 +139,7 @@ class TemplateEngine
      */
     private function getCacheKey(string $documentType, string $country, string $language): string
     {
-        return self::CACHE_PREFIX . md5($documentType . '_' . $country . '_' . $language);
+        return self::CACHE_PREFIX.md5($documentType.'_'.$country.'_'.$language);
     }
 
     /**
@@ -149,22 +149,22 @@ class TemplateEngine
     {
         // Remove HTML comments
         $content = preg_replace('/<!--.*?-->/s', '', $content);
-        
+
         // Remove excessive whitespace
         $content = preg_replace('/\n\s*\n\s*\n/', "\n\n", $content);
-        
+
         // Remove leading/trailing whitespace from each line
         $lines = explode("\n", $content);
         $lines = array_map('trim', $lines);
-        
+
         // Remove completely empty lines at the beginning and end
-        while (!empty($lines) && $lines[0] === '') {
+        while (! empty($lines) && $lines[0] === '') {
             array_shift($lines);
         }
-        while (!empty($lines) && $lines[count($lines) - 1] === '') {
+        while (! empty($lines) && $lines[count($lines) - 1] === '') {
             array_pop($lines);
         }
-        
+
         return implode("\n", $lines);
     }
 
@@ -174,16 +174,16 @@ class TemplateEngine
     public function validateTemplateData(string $documentType, array $data, string $country = 'SN', string $language = 'fr'): array
     {
         $template = $this->getTemplate($documentType, $country, $language);
-        
-        if (!$template) {
+
+        if (! $template) {
             return ['Template not found'];
         }
 
         $errors = [];
         $missingFields = $template->getMissingRequiredFields($data);
-        
-        if (!empty($missingFields)) {
-            $errors[] = 'Missing required fields: ' . implode(', ', $missingFields);
+
+        if (! empty($missingFields)) {
+            $errors[] = 'Missing required fields: '.implode(', ', $missingFields);
         }
 
         // Additional validation based on template rules
@@ -192,7 +192,7 @@ class TemplateEngine
             if (isset($data[$field])) {
                 $value = $data[$field];
                 foreach ($rules as $rule) {
-                    if (!$this->validateField($value, $rule)) {
+                    if (! $this->validateField($value, $rule)) {
                         $errors[] = "Field '{$field}' does not meet validation rule: {$rule}";
                     }
                 }
@@ -209,7 +209,7 @@ class TemplateEngine
     {
         switch ($rule) {
             case 'required':
-                return !empty($value);
+                return ! empty($value);
             case 'email':
                 return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
             case 'phone':

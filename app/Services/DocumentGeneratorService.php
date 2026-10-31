@@ -4,22 +4,18 @@ namespace App\Services;
 
 use App\Data\DocumentGenerationRequest;
 use App\Data\DocumentGenerationResult;
-use App\Models\GeneratedDocument;
 use App\Enums\Country;
 use App\Enums\DocumentType;
 use App\Enums\ToneLevel;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
-use InvalidArgumentException;
-use App\Services\ContentNeutralityValidator;
-use App\Services\ErrorHandlingService;
-use App\Exceptions\ValidationException;
 use App\Exceptions\ContentNeutralityException;
 use App\Exceptions\DataIntegrityException;
-use App\Exceptions\UserContentModificationException;
-use App\Exceptions\SessionDataCorruptionException;
+use App\Exceptions\ValidationException;
+use App\Models\GeneratedDocument;
 use Exception;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 class DocumentGeneratorService
 {
@@ -33,7 +29,7 @@ class DocumentGeneratorService
 
     /**
      * Generate a complete administrative document
-     * 
+     *
      * Requirements: 1.1, 1.2, 4.4, 4.5, 8.2
      */
     public function generateDocument(DocumentGenerationRequest $request): DocumentGenerationResult
@@ -41,7 +37,7 @@ class DocumentGeneratorService
         try {
             // Validate request data integrity (Requirement 1.2, 8.2)
             $validationResult = $this->validateRequest($request);
-            if (!$validationResult['valid']) {
+            if (! $validationResult['valid']) {
                 throw $this->errorHandler->handleValidationError(
                     'Données de requête invalides',
                     $validationResult['errors'],
@@ -56,23 +52,23 @@ class DocumentGeneratorService
             return DB::transaction(function () use ($request, $sessionId) {
                 // Step 1: Render base template with user data (Requirement 1.1)
                 $baseContent = $this->templateEngine->renderTemplate(
-                    $request->document_type,
+                    $request->getDocumentTypeValue(),
                     $request->fields,
-                    $request->country,
+                    $request->getCountryValue(),
                     $request->language
                 );
 
                 // Step 2: Apply country-specific adaptations (Requirement 4.4, 4.5)
                 $adaptedContent = $this->countryAdapter->adaptForCountry(
                     $baseContent,
-                    $request->country
+                    $request->getCountryValue()
                 );
 
                 // Step 3: Apply politeness formulas based on tone level (Requirement 4.4, 4.5)
                 $finalContent = $this->countryAdapter->applyPolitenesFormulas(
                     $adaptedContent,
-                    $request->country,
-                    $request->tone_level
+                    $request->getCountryValue(),
+                    $request->getToneLevelValue()
                 );
 
                 // Step 4: Apply content neutrality validation (Requirements 6.1-6.5)
@@ -81,12 +77,12 @@ class DocumentGeneratorService
                     $request->fields
                 );
 
-                if (!$neutralityResult['is_neutral']) {
+                if (! $neutralityResult['is_neutral']) {
                     $violationMessages = $this->neutralityValidator->getViolationMessages(
                         $neutralityResult['violations'],
                         $request->language
                     );
-                    
+
                     throw $this->errorHandler->handleContentNeutralityViolation(
                         'Le contenu généré ne respecte pas les exigences de neutralité',
                         $neutralityResult['violations'],
@@ -96,9 +92,9 @@ class DocumentGeneratorService
 
                 // Step 5: Final content sanitization and validation
                 $sanitizedContent = $this->sanitizeContent($finalContent);
-                
+
                 // Validate content integrity (Requirement 1.2)
-                if (!$this->validateContentIntegrity($request->fields, $sanitizedContent)) {
+                if (! $this->validateContentIntegrity($request->fields, $sanitizedContent)) {
                     throw $this->errorHandler->handleUserContentModification(
                         array_keys($request->fields)
                     );
@@ -130,7 +126,7 @@ class DocumentGeneratorService
             throw $e;
         } catch (InvalidArgumentException $e) {
             throw $this->errorHandler->handleValidationError(
-                'Erreur de validation: ' . $e->getMessage(),
+                'Erreur de validation: '.$e->getMessage(),
                 [],
                 ['session_id' => $request->session_id]
             );
@@ -151,7 +147,7 @@ class DocumentGeneratorService
         try {
             // Validate request
             $validationResult = $this->validateRequest($request);
-            if (!$validationResult['valid']) {
+            if (! $validationResult['valid']) {
                 throw $this->errorHandler->handleValidationError(
                     'Données de requête invalides',
                     $validationResult['errors'],
@@ -161,21 +157,21 @@ class DocumentGeneratorService
 
             // Generate preview content (same process but no storage)
             $baseContent = $this->templateEngine->renderTemplate(
-                $request->document_type,
+                $request->getDocumentTypeValue(),
                 $request->fields,
-                $request->country,
+                $request->getCountryValue(),
                 $request->language
             );
 
             $adaptedContent = $this->countryAdapter->adaptForCountry(
                 $baseContent,
-                $request->country
+                $request->getCountryValue()
             );
 
             $finalContent = $this->countryAdapter->applyPolitenesFormulas(
                 $adaptedContent,
-                $request->country,
-                $request->tone_level
+                $request->getCountryValue(),
+                $request->getToneLevelValue()
             );
 
             $sanitizedContent = $this->sanitizeContent($finalContent);
@@ -186,12 +182,12 @@ class DocumentGeneratorService
                 $request->fields
             );
 
-            if (!$neutralityResult['is_neutral']) {
+            if (! $neutralityResult['is_neutral']) {
                 $violationMessages = $this->neutralityValidator->getViolationMessages(
                     $neutralityResult['violations'],
                     $request->language
                 );
-                
+
                 throw $this->errorHandler->handleContentNeutralityViolation(
                     'Le contenu de prévisualisation ne respecte pas les exigences de neutralité',
                     $neutralityResult['violations'],
@@ -226,11 +222,12 @@ class DocumentGeneratorService
     {
         return collect(DocumentType::toArray())->map(function ($value, $key) {
             $enum = DocumentType::make($key);
+
             return [
                 'key' => $key,
                 'value' => $value,
                 'label' => $enum->label,
-                'required_fields' => \App\Http\Requests\DocumentRequest::getRequiredFieldsForDocumentType($key)
+                'required_fields' => \App\Http\Requests\DocumentRequest::getRequiredFieldsForDocumentType($key),
             ];
         });
     }
@@ -241,14 +238,15 @@ class DocumentGeneratorService
     public function getSupportedCountries(): Collection
     {
         $supportedCountries = $this->countryAdapter->getSupportedCountries();
-        
+
         return collect(Country::toArray())->map(function ($value, $key) use ($supportedCountries) {
             $enum = Country::make($key);
+
             return [
                 'key' => $key,
                 'value' => $value,
                 'label' => $enum->label,
-                'supported' => isset($supportedCountries[$value])
+                'supported' => isset($supportedCountries[$value]),
             ];
         })->filter(function ($country) {
             return $country['supported'];
@@ -262,10 +260,11 @@ class DocumentGeneratorService
     {
         return collect(ToneLevel::toArray())->map(function ($value, $key) {
             $enum = ToneLevel::make($key);
+
             return [
                 'key' => $key,
                 'value' => $value,
-                'label' => $enum->label
+                'label' => $enum->label,
             ];
         });
     }
@@ -278,35 +277,35 @@ class DocumentGeneratorService
         $errors = [];
 
         // Check if document type is supported
-        if (!$this->templateEngine->isDocumentTypeSupported($request->document_type)) {
+        if (! $this->templateEngine->isDocumentTypeSupported($request->getDocumentTypeValue())) {
             $errors[] = "Type de document non supporté: {$request->document_type}";
         }
 
         // Check if country is supported
-        if (!$this->countryAdapter->isCountrySupported($request->country)) {
+        if (! $this->countryAdapter->isCountrySupported($request->getCountryValue())) {
             $errors[] = "Pays non supporté: {$request->country}";
         }
 
         // Check required fields
-        if (!$request->hasAllRequiredFields()) {
+        if (! $request->hasAllRequiredFields()) {
             $missingFields = $request->getMissingRequiredFields();
-            $errors[] = "Champs obligatoires manquants: " . implode(', ', $missingFields);
+            $errors[] = 'Champs obligatoires manquants: '.implode(', ', $missingFields);
         }
 
         // Validate template exists
         $template = $this->templateEngine->getTemplate(
-            $request->document_type,
-            $request->country,
+            $request->getDocumentTypeValue(),
+            $request->getCountryValue(),
             $request->language
         );
 
-        if (!$template) {
-            $errors[] = "Template non trouvé pour: {$request->document_type}, {$request->country}, {$request->language}";
+        if (! $template) {
+            $errors[] = "Template non trouvé pour: {$request->getDocumentTypeValue()}, {$request->getCountryValue()}, {$request->language}";
         }
 
         return [
             'valid' => empty($errors),
-            'errors' => $errors
+            'errors' => $errors,
         ];
     }
 
@@ -318,17 +317,18 @@ class DocumentGeneratorService
     {
         // Check that all provided field values appear in the generated content
         foreach ($originalFields as $field => $value) {
-            if (!empty($value) && is_string($value)) {
+            if (! empty($value) && is_string($value)) {
                 // Allow for minor formatting changes but ensure core content is preserved
                 $normalizedValue = trim($value);
                 $normalizedContent = preg_replace('/\s+/', ' ', $generatedContent);
-                
+
                 if (strpos($normalizedContent, $normalizedValue) === false) {
                     Log::warning('Content integrity violation detected', [
                         'field' => $field,
                         'original_value' => $value,
-                        'content_length' => strlen($generatedContent)
+                        'content_length' => strlen($generatedContent),
                     ]);
+
                     return false;
                 }
             }
@@ -344,26 +344,26 @@ class DocumentGeneratorService
     {
         // Remove HTML tags and comments
         $content = strip_tags($content);
-        
+
         // Remove HTML entities
         $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        
+
         // Normalize whitespace
         $content = preg_replace('/\n\s*\n\s*\n/', "\n\n", $content);
         $content = preg_replace('/[ \t]+/', ' ', $content);
-        
+
         // Clean up line breaks
         $lines = explode("\n", $content);
         $lines = array_map('trim', $lines);
-        
+
         // Remove empty lines at start and end
-        while (!empty($lines) && $lines[0] === '') {
+        while (! empty($lines) && $lines[0] === '') {
             array_shift($lines);
         }
-        while (!empty($lines) && $lines[count($lines) - 1] === '') {
+        while (! empty($lines) && $lines[count($lines) - 1] === '') {
             array_pop($lines);
         }
-        
+
         return implode("\n", $lines);
     }
 
@@ -386,9 +386,9 @@ class DocumentGeneratorService
             'metadata' => [
                 'generated_at' => now()->toISOString(),
                 'fields_count' => count($request->fields),
-                'content_length' => strlen($content)
+                'content_length' => strlen($content),
             ],
-            'expires_at' => now()->addHours(24) // Expire after 24 hours
+            'expires_at' => now()->addHours(24), // Expire after 24 hours
         ]);
 
         return (string) $document->id;
@@ -415,7 +415,7 @@ class DocumentGeneratorService
             'fields_provided' => count($request->fields),
             'generation_timestamp' => now()->toISOString(),
             'template_engine_version' => '1.0',
-            'country_adapter_version' => '1.0'
+            'country_adapter_version' => '1.0',
         ];
     }
 
@@ -429,7 +429,7 @@ class DocumentGeneratorService
 
     /**
      * Generate PDF from document content
-     * 
+     *
      * Requirements: 1.5, 7.1, 7.2, 7.3
      */
     public function generateDocumentPDF(DocumentGenerationRequest $request, array $pdfOptions = []): DocumentGenerationResult
@@ -437,36 +437,36 @@ class DocumentGeneratorService
         try {
             // First generate the document content
             $documentResult = $this->generateDocument($request);
-            
-            if (!$documentResult->isSuccessful()) {
+
+            if (! $documentResult->isSuccessful()) {
                 throw $this->errorHandler->handleDocumentGenerationError(
                     $documentResult->getFormattedErrorMessage(),
                     'PDF generation failed due to document generation failure',
                     ['session_id' => $request->session_id]
                 );
             }
-            
+
             // Use administrative document options by default
-            $options = empty($pdfOptions) 
+            $options = empty($pdfOptions)
                 ? $this->outputFormatter->getAdministrativeDocumentOptions()
                 : $pdfOptions;
-            
+
             // Validate PDF options
             $validationErrors = $this->outputFormatter->validatePDFOptions($options);
-            if (!empty($validationErrors)) {
+            if (! empty($validationErrors)) {
                 throw $this->errorHandler->handleInvalidPDFOptions(
                     $validationErrors,
                     $options
                 );
             }
-            
+
             // Generate PDF
             $pdfContent = $this->outputFormatter->generatePDF($documentResult->content, $options);
-            
+
             // Save PDF temporarily
             $filename = $this->generatePDFFilename($request);
             $pdfPath = $this->outputFormatter->savePDF($pdfContent, $filename);
-            
+
             // Update document record with PDF path
             if ($documentResult->document_id) {
                 $document = GeneratedDocument::find($documentResult->document_id);
@@ -474,15 +474,15 @@ class DocumentGeneratorService
                     $document->update(['pdf_path' => $pdfPath]);
                 }
             }
-            
+
             // Return result with PDF metadata
             return $documentResult->withMetadata([
                 'pdf_generated' => true,
                 'pdf_path' => $pdfPath,
                 'pdf_size' => strlen($pdfContent),
-                'pdf_options' => $options
+                'pdf_options' => $options,
             ]);
-            
+
         } catch (Exception $e) {
             throw $this->errorHandler->handlePDFGenerationError(
                 $e->getMessage(),
@@ -498,16 +498,16 @@ class DocumentGeneratorService
     {
         // Generate preview content
         $documentResult = $this->previewDocument($request);
-        
-        if (!$documentResult->isSuccessful()) {
+
+        if (! $documentResult->isSuccessful()) {
             throw new Exception($documentResult->getFormattedErrorMessage());
         }
-        
+
         // Use administrative document options by default
-        $options = empty($pdfOptions) 
+        $options = empty($pdfOptions)
             ? $this->outputFormatter->getAdministrativeDocumentOptions()
             : $pdfOptions;
-        
+
         // Generate and return PDF content
         return $this->outputFormatter->generatePDF($documentResult->content, $options);
     }
@@ -520,7 +520,7 @@ class DocumentGeneratorService
         $timestamp = now()->format('Y-m-d_H-i-s');
         $documentType = str_replace('_', '-', $request->document_type);
         $country = strtolower($request->country);
-        
+
         return "{$documentType}_{$country}_{$timestamp}.pdf";
     }
 

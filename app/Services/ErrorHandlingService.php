@@ -2,29 +2,29 @@
 
 namespace App\Services;
 
+use App\Exceptions\ContentNeutralityException;
+use App\Exceptions\ContentSanitizationException;
+use App\Exceptions\CountryAdaptationConflictException;
+use App\Exceptions\CountryAdaptationException;
+use App\Exceptions\CountryRulesNotFoundException;
+use App\Exceptions\DataIntegrityException;
 use App\Exceptions\DocumentGenerationException;
-use App\Exceptions\ValidationException;
+use App\Exceptions\InvalidPDFOptionsException;
+use App\Exceptions\OutputFormattingException;
+use App\Exceptions\PDFGenerationException;
+use App\Exceptions\SessionDataCorruptionException;
 use App\Exceptions\TemplateException;
 use App\Exceptions\TemplateNotFoundException;
 use App\Exceptions\TemplateRenderingException;
-use App\Exceptions\CountryAdaptationException;
 use App\Exceptions\UnsupportedCountryException;
-use App\Exceptions\CountryRulesNotFoundException;
-use App\Exceptions\CountryAdaptationConflictException;
-use App\Exceptions\ContentNeutralityException;
-use App\Exceptions\OutputFormattingException;
-use App\Exceptions\PDFGenerationException;
-use App\Exceptions\InvalidPDFOptionsException;
-use App\Exceptions\ContentSanitizationException;
-use App\Exceptions\DataIntegrityException;
 use App\Exceptions\UserContentModificationException;
-use App\Exceptions\SessionDataCorruptionException;
-use Illuminate\Support\Facades\Log;
+use App\Exceptions\ValidationException;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Service for consistent error handling across the application
- * 
+ *
  * Requirements: 8.5 - Clear error messages without system exposure
  */
 class ErrorHandlingService
@@ -48,7 +48,7 @@ class ErrorHandlingService
         string $templateType = '',
         string $country = '',
         string $language = '',
-        Exception $previous = null
+        ?Exception $previous = null
     ): TemplateException {
         return new TemplateException($userMessage, $templateType, $country, $language, $previous);
     }
@@ -72,13 +72,13 @@ class ErrorHandlingService
         string $country,
         string $language,
         string $renderingError = '',
-        Exception $previous = null
+        ?Exception $previous = null
     ): TemplateRenderingException {
         return new TemplateRenderingException(
-            $templateType, 
-            $country, 
-            $language, 
-            $renderingError, 
+            $templateType,
+            $country,
+            $language,
+            $renderingError,
             $previous
         );
     }
@@ -201,12 +201,12 @@ class ErrorHandlingService
             'original_message' => $exception->getMessage(),
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
-            'context' => $this->sanitizeContext($context)
+            'context' => $this->sanitizeContext($context),
         ]);
 
         return new DocumentGenerationException(
             $userMessage,
-            "Wrapped exception: " . $exception->getMessage(),
+            'Wrapped exception: '.$exception->getMessage(),
             $context,
             'UNEXPECTED_ERROR',
             500,
@@ -229,10 +229,27 @@ class ErrorHandlingService
                 'code' => $errorCode,
                 'message' => $message,
                 'details' => $details,
-                'timestamp' => now()->toISOString()
+                'timestamp' => now()->toISOString(),
             ],
-            'http_code' => $httpCode
+            'http_code' => $httpCode,
         ];
+    }
+
+    /**
+     * Create JSON error response for API endpoints
+     */
+    public function createJsonErrorResponse(
+        string $errorCode,
+        string $message,
+        array $details = [],
+        int $httpCode = 500
+    ): \Illuminate\Http\JsonResponse {
+        $errorData = $this->createErrorResponse($errorCode, $message, $details, $httpCode);
+
+        return response()->json([
+            'success' => false,
+            'error' => $errorData['error'],
+        ], $httpCode);
     }
 
     /**
@@ -247,24 +264,24 @@ class ErrorHandlingService
             'applicant_name', 'student_name', 'declarant_name',
             'complainant_name', 'requester_name', 'appellant_name',
             'sender_name', 'address', 'phone', 'email', 'password',
-            
+
             // Authentication and security
             'token', 'api_key', '_token', 'csrf_token', 'access_token',
             'refresh_token', 'session_token', 'auth_token',
-            
+
             // Payment and financial
             'credit_card', 'bank_account', 'payment_info', 'billing_info',
-            
+
             // System sensitive
             'database_password', 'db_password', 'secret', 'private_key',
             'encryption_key', 'hash', 'salt',
-            
+
             // Request sensitive
             'password_confirmation', 'current_password', 'new_password',
-            
+
             // Document content
             'document_content', 'generated_content', 'template_content',
-            'user_input', 'form_data'
+            'user_input', 'form_data',
         ];
 
         foreach ($sensitiveKeys as $key) {
@@ -274,14 +291,14 @@ class ErrorHandlingService
                 } elseif (is_array($context[$key])) {
                     $context[$key] = [
                         'type' => 'array',
-                        'count' => count($context[$key]), 
-                        'data' => '[REDACTED]'
+                        'count' => count($context[$key]),
+                        'data' => '[REDACTED]',
                     ];
                 } elseif (is_object($context[$key])) {
                     $context[$key] = [
                         'type' => 'object',
                         'class' => get_class($context[$key]),
-                        'data' => '[REDACTED]'
+                        'data' => '[REDACTED]',
                     ];
                 } else {
                     $context[$key] = '[REDACTED]';
@@ -299,13 +316,13 @@ class ErrorHandlingService
                     $context[$key] = [
                         'type' => 'object',
                         'class' => get_class($value),
-                        'data' => $this->sanitizeContext($value->toArray())
+                        'data' => $this->sanitizeContext($value->toArray()),
                     ];
                 } else {
                     $context[$key] = [
                         'type' => 'object',
                         'class' => get_class($value),
-                        'data' => '[OBJECT_NOT_SERIALIZABLE]'
+                        'data' => '[OBJECT_NOT_SERIALIZABLE]',
                     ];
                 }
             }
@@ -316,13 +333,13 @@ class ErrorHandlingService
             if (is_string($value)) {
                 // Remove potential email addresses
                 $value = preg_replace('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', '[EMAIL_REDACTED]', $value);
-                
+
                 // Remove potential phone numbers
                 $value = preg_replace('/(\+?[0-9]{1,4}[-.\s]?)?(\(?[0-9]{1,4}\)?[-.\s]?)?[0-9]{3,4}[-.\s]?[0-9]{3,4}/', '[PHONE_REDACTED]', $value);
-                
+
                 // Remove potential credit card numbers
                 $value = preg_replace('/\b(?:\d{4}[-\s]?){3}\d{4}\b/', '[CARD_REDACTED]', $value);
-                
+
                 $context[$key] = $value;
             }
         }
@@ -340,17 +357,17 @@ class ErrorHandlingService
         string $level = 'error'
     ): void {
         $sanitizedContext = $this->sanitizeContext($context);
-        
+
         // Add standard logging metadata
         $sanitizedContext['logged_at'] = now()->toISOString();
         $sanitizedContext['log_level'] = $level;
-        
+
         // Add memory usage for performance monitoring
         $sanitizedContext['memory_usage'] = [
             'current' => memory_get_usage(true),
-            'peak' => memory_get_peak_usage(true)
+            'peak' => memory_get_peak_usage(true),
         ];
-        
+
         match ($level) {
             'debug' => Log::debug($message, $sanitizedContext),
             'info' => Log::info($message, $sanitizedContext),
@@ -375,7 +392,7 @@ class ErrorHandlingService
         $message = $customMessage ?? $exception->getMessage();
         $context = $this->createErrorContext($exception, $additionalContext);
         $level = $this->getErrorSeverity($exception);
-        
+
         $this->logError($message, $context, $level);
     }
 
@@ -391,7 +408,7 @@ class ErrorHandlingService
             $this->logError("Slow operation detected: {$operation}", array_merge($context, [
                 'operation' => $operation,
                 'execution_time' => $executionTime,
-                'performance_issue' => true
+                'performance_issue' => true,
             ]), 'warning');
         }
     }
@@ -410,7 +427,7 @@ class ErrorHandlingService
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'session_id' => request()->hasSession() ? request()->session()->getId() : null,
-            'user_id' => auth()->check() ? auth()->id() : null
+            'user_id' => auth()->check() ? auth()->id() : null,
         ]);
 
         $this->logError("Security event: {$event}", $securityContext, $level);
@@ -472,12 +489,12 @@ class ErrorHandlingService
             'UnexpectedValueException' => 'Valeur inattendue rencontrée. Veuillez vérifier vos données.',
             'DomainException' => 'Opération non valide dans ce contexte.',
             'LengthException' => 'Longueur de données invalide.',
-            'RangeException' => 'Valeur hors de la plage autorisée.'
+            'RangeException' => 'Valeur hors de la plage autorisée.',
         ];
 
         $exceptionClass = get_class($exception);
-        
-        return $defaultMessages[$exceptionClass] ?? 
+
+        return $defaultMessages[$exceptionClass] ??
                "Une erreur inattendue s'est produite. Veuillez réessayer.";
     }
 
@@ -532,7 +549,7 @@ class ErrorHandlingService
             'line' => $exception->getLine(),
             'severity' => $this->getErrorSeverity($exception),
             'trace_hash' => md5($exception->getTraceAsString()),
-            'timestamp' => now()->toISOString()
+            'timestamp' => now()->toISOString(),
         ];
 
         // Add request context if available
@@ -544,7 +561,7 @@ class ErrorHandlingService
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'session_id' => $request->hasSession() ? $request->session()->getId() : null,
-                'user_id' => auth()->check() ? auth()->id() : null
+                'user_id' => auth()->check() ? auth()->id() : null,
             ];
         }
 
@@ -554,12 +571,13 @@ class ErrorHandlingService
                 'class' => get_class($exception->getPrevious()),
                 'message' => $exception->getPrevious()->getMessage(),
                 'file' => $exception->getPrevious()->getFile(),
-                'line' => $exception->getPrevious()->getLine()
+                'line' => $exception->getPrevious()->getLine(),
             ];
         }
 
         // Merge additional context and sanitize
         $context = array_merge($context, $additionalContext);
+
         return $this->sanitizeContext($context);
     }
 }

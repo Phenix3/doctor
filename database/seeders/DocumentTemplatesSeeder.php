@@ -39,7 +39,7 @@ class DocumentTemplatesSeeder extends Seeder
             foreach ($languages as $language) {
                 // Administrative Application Templates
                 $templates[] = [
-                    'document_type' => 'administrative_application',
+                    'document_type' => 'ADMINISTRATIVE_APPLICATION',
                     'country' => $country,
                     'language' => $language,
                     'template_content' => 'Blade template for administrative application',
@@ -52,7 +52,7 @@ class DocumentTemplatesSeeder extends Seeder
                         'subject',
                         'request_context',
                         'request_details',
-                        'date'
+                        'date',
                     ],
                     'optional_fields' => [
                         'applicant_phone',
@@ -69,19 +69,19 @@ class DocumentTemplatesSeeder extends Seeder
                         'attachments',
                         'applicant_signature',
                         'politeness_formula_opening',
-                        'politeness_formula_closing'
+                        'politeness_formula_closing',
                     ],
                     'validation_rules' => [
                         'applicant_email' => ['email'],
                         'applicant_phone' => ['phone'],
-                        'date' => ['date']
+                        'date' => ['date'],
                     ],
                     'is_active' => true,
                 ];
 
                 // Motivation Letter Templates
                 $templates[] = [
-                    'document_type' => 'motivation_letter',
+                    'document_type' => 'MOTIVATION_LETTER',
                     'country' => $country,
                     'language' => $language,
                     'template_content' => 'Blade template for motivation letter',
@@ -93,7 +93,7 @@ class DocumentTemplatesSeeder extends Seeder
                         'recipient_organization',
                         'position_title',
                         'motivation_content',
-                        'date'
+                        'date',
                     ],
                     'optional_fields' => [
                         'applicant_phone',
@@ -113,19 +113,19 @@ class DocumentTemplatesSeeder extends Seeder
                         'attachments',
                         'applicant_signature',
                         'politeness_formula_opening',
-                        'politeness_formula_closing'
+                        'politeness_formula_closing',
                     ],
                     'validation_rules' => [
                         'applicant_email' => ['email'],
                         'applicant_phone' => ['phone'],
-                        'date' => ['date']
+                        'date' => ['date'],
                     ],
                     'is_active' => true,
                 ];
 
                 // Internship Request Templates
                 $templates[] = [
-                    'document_type' => 'internship_request',
+                    'document_type' => 'INTERNSHIP_REQUEST',
                     'country' => $country,
                     'language' => $language,
                     'template_content' => 'Blade template for internship request',
@@ -140,7 +140,7 @@ class DocumentTemplatesSeeder extends Seeder
                         'internship_duration',
                         'internship_period',
                         'internship_objectives',
-                        'date'
+                        'date',
                     ],
                     'optional_fields' => [
                         'student_phone',
@@ -161,19 +161,19 @@ class DocumentTemplatesSeeder extends Seeder
                         'attachments',
                         'student_signature',
                         'politeness_formula_opening',
-                        'politeness_formula_closing'
+                        'politeness_formula_closing',
                     ],
                     'validation_rules' => [
                         'student_email' => ['email'],
                         'student_phone' => ['phone'],
-                        'date' => ['date']
+                        'date' => ['date'],
                     ],
                     'is_active' => true,
                 ];
 
                 // Honor Attestation Templates
                 $templates[] = [
-                    'document_type' => 'honor_attestation',
+                    'document_type' => 'HONOR_ATTESTATION',
                     'country' => $country,
                     'language' => $language,
                     'template_content' => 'Blade template for honor attestation',
@@ -187,7 +187,7 @@ class DocumentTemplatesSeeder extends Seeder
                         'identity_document_type',
                         'identity_document_number',
                         'declaration_content',
-                        'date'
+                        'date',
                     ],
                     'optional_fields' => [
                         'declarant_phone',
@@ -203,21 +203,21 @@ class DocumentTemplatesSeeder extends Seeder
                         'additional_commitments',
                         'legal_consequences',
                         'witness_signature',
-                        'declarant_signature'
+                        'declarant_signature',
                     ],
                     'validation_rules' => [
                         'declarant_email' => ['email'],
                         'declarant_phone' => ['phone'],
                         'birth_date' => ['date'],
                         'id_issue_date' => ['date'],
-                        'date' => ['date']
+                        'date' => ['date'],
                     ],
                     'is_active' => true,
                 ];
 
                 // Complaint Letter Templates
                 $templates[] = [
-                    'document_type' => 'complaint_letter',
+                    'document_type' => 'COMPLAINT_LETTER',
                     'country' => $country,
                     'language' => $language,
                     'template_content' => 'Blade template for complaint letter',
@@ -230,7 +230,7 @@ class DocumentTemplatesSeeder extends Seeder
                         'complaint_subject',
                         'complaint_details',
                         'desired_resolution',
-                        'date'
+                        'date',
                     ],
                     'optional_fields' => [
                         'complainant_phone',
@@ -254,20 +254,20 @@ class DocumentTemplatesSeeder extends Seeder
                         'attachments',
                         'complainant_signature',
                         'politeness_formula_opening',
-                        'politeness_formula_closing'
+                        'politeness_formula_closing',
                     ],
                     'validation_rules' => [
                         'complainant_email' => ['email'],
                         'complainant_phone' => ['phone'],
                         'incident_date' => ['date'],
-                        'date' => ['date']
+                        'date' => ['date'],
                     ],
                     'is_active' => true,
                 ];
 
                 // Administrative Act Request Templates
                 $templates[] = [
-                    'document_type' => 'administrative_act_request',
+                    'document_type' => 'ADMINISTRATIVE_ACT_REQUEST',
                     'country' => $country,
                     'language' => $language,
                     'template_content' => 'Blade template for administrative act request',
@@ -281,7 +281,7 @@ class DocumentTemplatesSeeder extends Seeder
                         'document_type_requested',
                         'person_concerned',
                         'justification',
-                        'date'
+                        'date',
                     ],
                     'optional_fields' => [
                         'requester_phone',
@@ -305,21 +305,21 @@ class DocumentTemplatesSeeder extends Seeder
                         'attachments',
                         'requester_signature',
                         'politeness_formula_opening',
-                        'politeness_formula_closing'
+                        'politeness_formula_closing',
                     ],
                     'validation_rules' => [
                         'requester_email' => ['email'],
                         'requester_phone' => ['phone'],
                         'contact_phone' => ['phone'],
                         'person_birth_date' => ['date'],
-                        'date' => ['date']
+                        'date' => ['date'],
                     ],
                     'is_active' => true,
                 ];
 
                 // Appeal or Postponement Letter Templates
                 $templates[] = [
-                    'document_type' => 'appeal_or_postponement_letter',
+                    'document_type' => 'APPEAL_OR_POSTPONEMENT_LETTER',
                     'country' => $country,
                     'language' => $language,
                     'template_content' => 'Blade template for appeal or postponement letter',
@@ -333,7 +333,7 @@ class DocumentTemplatesSeeder extends Seeder
                         'decision_description',
                         'appeal_grounds',
                         'requested_outcome',
-                        'date'
+                        'date',
                     ],
                     'optional_fields' => [
                         'appellant_phone',
@@ -358,21 +358,21 @@ class DocumentTemplatesSeeder extends Seeder
                         'attachments',
                         'appellant_signature',
                         'politeness_formula_opening',
-                        'politeness_formula_closing'
+                        'politeness_formula_closing',
                     ],
                     'validation_rules' => [
                         'appellant_email' => ['email'],
                         'appellant_phone' => ['phone'],
                         'original_decision_date' => ['date'],
                         'notification_date' => ['date'],
-                        'date' => ['date']
+                        'date' => ['date'],
                     ],
                     'is_active' => true,
                 ];
 
                 // Generic Administrative Correspondence Templates
                 $templates[] = [
-                    'document_type' => 'generic_administrative_correspondence',
+                    'document_type' => 'GENERIC_ADMINISTRATIVE_CORRESPONDENCE',
                     'country' => $country,
                     'language' => $language,
                     'template_content' => 'Blade template for generic administrative correspondence',
@@ -384,7 +384,7 @@ class DocumentTemplatesSeeder extends Seeder
                         'recipient_organization',
                         'subject',
                         'message_content',
-                        'date'
+                        'date',
                     ],
                     'optional_fields' => [
                         'sender_phone',
@@ -409,12 +409,12 @@ class DocumentTemplatesSeeder extends Seeder
                         'attachments',
                         'sender_signature',
                         'politeness_formula_opening',
-                        'politeness_formula_closing'
+                        'politeness_formula_closing',
                     ],
                     'validation_rules' => [
                         'sender_email' => ['email'],
                         'sender_phone' => ['phone'],
-                        'date' => ['date']
+                        'date' => ['date'],
                     ],
                     'is_active' => true,
                 ];

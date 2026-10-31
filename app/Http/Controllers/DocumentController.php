@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Data\DocumentGenerationRequest;
-use App\Data\DocumentGenerationResult;
 use App\Http\Requests\DocumentRequest;
 use App\Services\DocumentGeneratorService;
 use App\Services\ErrorHandlingService;
@@ -12,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -27,27 +25,24 @@ class DocumentController extends Controller
 
     /**
      * Generate a document preview
-     * 
-     * @param DocumentRequest $request
-     * @return JsonResponse
      */
     public function preview(DocumentRequest $request): JsonResponse
     {
         try {
             // Create document generation request from validated data
             $generationRequest = $this->createGenerationRequest($request);
-            
+
             // Generate preview
             $result = $this->documentGenerator->previewDocument($generationRequest);
-            
-            if (!$result->isSuccessful()) {
+
+            if (! $result->isSuccessful()) {
                 return response()->json([
                     'success' => false,
                     'error' => [
                         'code' => 'PREVIEW_GENERATION_FAILED',
                         'message' => $result->getFormattedErrorMessage(),
-                        'timestamp' => now()->toISOString()
-                    ]
+                        'timestamp' => now()->toISOString(),
+                    ],
                 ], 400);
             }
 
@@ -56,15 +51,15 @@ class DocumentController extends Controller
                 'data' => [
                     'content' => $result->content,
                     'metadata' => $result->metadata,
-                    'session_id' => $result->session_id
-                ]
+                    'session_id' => $result->session_id,
+                ],
             ]);
 
         } catch (\Exception $e) {
             Log::error('Document preview failed', [
                 'error' => $e->getMessage(),
                 'user_id' => auth()->id(),
-                'request_data' => $request->safe()->toArray()
+                'request_data' => $request->safe()->toArray(),
             ]);
 
             return $this->errorHandler->createJsonErrorResponse(
@@ -78,27 +73,24 @@ class DocumentController extends Controller
 
     /**
      * Generate a complete document with optional async PDF generation
-     * 
-     * @param DocumentRequest $request
-     * @return JsonResponse
      */
     public function store(DocumentRequest $request): JsonResponse
     {
         try {
             // Create document generation request from validated data
             $generationRequest = $this->createGenerationRequest($request);
-            
+
             // Generate document
             $result = $this->documentGenerator->generateDocument($generationRequest);
-            
-            if (!$result->isSuccessful()) {
+
+            if (! $result->isSuccessful()) {
                 return response()->json([
                     'success' => false,
                     'error' => [
                         'code' => 'DOCUMENT_GENERATION_FAILED',
                         'message' => $result->getFormattedErrorMessage(),
-                        'timestamp' => now()->toISOString()
-                    ]
+                        'timestamp' => now()->toISOString(),
+                    ],
                 ], 400);
             }
 
@@ -125,20 +117,20 @@ class DocumentController extends Controller
                     'metadata' => $result->metadata,
                     'download_url' => route('documents.download', [
                         'session' => $result->session_id,
-                        'document' => $result->document_id
+                        'document' => $result->document_id,
                     ]),
                     'pdf_status_url' => route('api.documents.pdf-status', [
                         'session' => $result->session_id,
-                        'document' => $result->document_id
-                    ])
-                ]
+                        'document' => $result->document_id,
+                    ]),
+                ],
             ]);
 
         } catch (\Exception $e) {
             Log::error('Document generation failed', [
                 'error' => $e->getMessage(),
                 'user_id' => auth()->id(),
-                'request_data' => $request->safe()->toArray()
+                'request_data' => $request->safe()->toArray(),
             ]);
 
             return $this->errorHandler->createJsonErrorResponse(
@@ -152,11 +144,6 @@ class DocumentController extends Controller
 
     /**
      * Download a generated document as PDF
-     * 
-     * @param Request $request
-     * @param string $session
-     * @param string $document
-     * @return BinaryFileResponse|JsonResponse
      */
     public function download(Request $request, string $session, string $document): BinaryFileResponse|JsonResponse
     {
@@ -175,11 +162,11 @@ class DocumentController extends Controller
             $cacheKey = "document:{$session}:{$document}";
             $result = Cache::get($cacheKey);
 
-            if (!$result) {
+            if (! $result) {
                 // Fallback to database
                 $documentRecord = $this->documentGenerator->getDocumentBySession($session, $document);
-                
-                if (!$documentRecord) {
+
+                if (! $documentRecord) {
                     return $this->errorHandler->createJsonErrorResponse(
                         'DOCUMENT_NOT_FOUND',
                         'Document non trouvé ou expiré',
@@ -196,7 +183,7 @@ class DocumentController extends Controller
             $generationRequest = $this->createGenerationRequestFromResult($result);
             $pdfResult = $this->documentGenerator->generateDocumentPDF($generationRequest);
 
-            if (!$pdfResult->isSuccessful()) {
+            if (! $pdfResult->isSuccessful()) {
                 return $this->errorHandler->createJsonErrorResponse(
                     'PDF_GENERATION_FAILED',
                     'Erreur lors de la génération du PDF',
@@ -207,8 +194,8 @@ class DocumentController extends Controller
 
             // Get PDF path from metadata
             $pdfPath = $pdfResult->metadata['pdf_path'] ?? null;
-            
-            if (!$pdfPath || !Storage::exists($pdfPath)) {
+
+            if (! $pdfPath || ! Storage::exists($pdfPath)) {
                 return $this->errorHandler->createJsonErrorResponse(
                     'PDF_FILE_NOT_FOUND',
                     'Fichier PDF non trouvé',
@@ -225,7 +212,7 @@ class DocumentController extends Controller
                 'Content-Type' => 'application/pdf',
                 'Cache-Control' => 'no-cache, no-store, must-revalidate',
                 'Pragma' => 'no-cache',
-                'Expires' => '0'
+                'Expires' => '0',
             ]);
 
         } catch (\Exception $e) {
@@ -233,7 +220,7 @@ class DocumentController extends Controller
                 'error' => $e->getMessage(),
                 'user_id' => auth()->id(),
                 'session' => $session,
-                'document' => $document
+                'document' => $document,
             ]);
 
             return $this->errorHandler->createJsonErrorResponse(
@@ -247,8 +234,6 @@ class DocumentController extends Controller
 
     /**
      * Get supported document types
-     * 
-     * @return JsonResponse
      */
     public function types(): JsonResponse
     {
@@ -259,7 +244,7 @@ class DocumentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $types
+                'data' => $types,
             ]);
 
         } catch (\Exception $e) {
@@ -276,8 +261,6 @@ class DocumentController extends Controller
 
     /**
      * Get supported countries
-     * 
-     * @return JsonResponse
      */
     public function countries(): JsonResponse
     {
@@ -288,7 +271,7 @@ class DocumentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $countries
+                'data' => $countries,
             ]);
 
         } catch (\Exception $e) {
@@ -305,8 +288,6 @@ class DocumentController extends Controller
 
     /**
      * Get supported tone levels
-     * 
-     * @return JsonResponse
      */
     public function toneLevels(): JsonResponse
     {
@@ -317,7 +298,7 @@ class DocumentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $toneLevels
+                'data' => $toneLevels,
             ]);
 
         } catch (\Exception $e) {
@@ -334,11 +315,6 @@ class DocumentController extends Controller
 
     /**
      * Check PDF generation status
-     * 
-     * @param Request $request
-     * @param string $session
-     * @param string $document
-     * @return JsonResponse
      */
     public function pdfStatus(Request $request, string $session, string $document): JsonResponse
     {
@@ -357,11 +333,11 @@ class DocumentController extends Controller
             $cacheKey = "pdf_ready:{$session}:{$document}";
             $pdfStatus = Cache::get($cacheKey);
 
-            if (!$pdfStatus) {
+            if (! $pdfStatus) {
                 // Check if document exists
                 $documentRecord = $this->documentGenerator->getDocumentBySession($session, $document);
-                
-                if (!$documentRecord) {
+
+                if (! $documentRecord) {
                     return $this->errorHandler->createJsonErrorResponse(
                         'DOCUMENT_NOT_FOUND',
                         'Document non trouvé ou expiré',
@@ -380,8 +356,8 @@ class DocumentController extends Controller
                     'pdf_status' => $pdfStatus['status'],
                     'generated_at' => $pdfStatus['generated_at'] ?? null,
                     'error' => $pdfStatus['error'] ?? null,
-                    'download_ready' => $pdfStatus['status'] === 'ready'
-                ]
+                    'download_ready' => $pdfStatus['status'] === 'ready',
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -389,7 +365,7 @@ class DocumentController extends Controller
                 'error' => $e->getMessage(),
                 'user_id' => auth()->id(),
                 'session' => $session,
-                'document' => $document
+                'document' => $document,
             ]);
 
             return $this->errorHandler->createJsonErrorResponse(
@@ -403,18 +379,16 @@ class DocumentController extends Controller
 
     /**
      * Health check endpoint for monitoring
-     * 
-     * @return JsonResponse
      */
     public function health(): JsonResponse
     {
         try {
             // Check database connectivity
             $dbStatus = $this->checkDatabaseHealth();
-            
+
             // Check cache connectivity
             $cacheStatus = $this->checkCacheHealth();
-            
+
             // Check storage accessibility
             $storageStatus = $this->checkStorageHealth();
 
@@ -426,9 +400,9 @@ class DocumentController extends Controller
                 'checks' => [
                     'database' => $dbStatus ? 'ok' : 'error',
                     'cache' => $cacheStatus ? 'ok' : 'error',
-                    'storage' => $storageStatus ? 'ok' : 'error'
+                    'storage' => $storageStatus ? 'ok' : 'error',
                 ],
-                'timestamp' => now()->toISOString()
+                'timestamp' => now()->toISOString(),
             ], $overallStatus ? 200 : 503);
 
         } catch (\Exception $e) {
@@ -436,7 +410,7 @@ class DocumentController extends Controller
                 'success' => false,
                 'status' => 'error',
                 'error' => 'Health check failed',
-                'timestamp' => now()->toISOString()
+                'timestamp' => now()->toISOString(),
             ], 503);
         }
     }
@@ -446,14 +420,7 @@ class DocumentController extends Controller
      */
     private function createGenerationRequest(DocumentRequest $request): DocumentGenerationRequest
     {
-        return new DocumentGenerationRequest(
-            country: $request->validated('country'),
-            document_type: $request->validated('document_type'),
-            tone_level: $request->validated('tone_level'),
-            language: $request->validated('language', 'fr'),
-            fields: $request->validated('fields', []),
-            session_id: session()->getId()
-        );
+        return DocumentGenerationRequest::fromRequest($request);
     }
 
     /**
@@ -479,7 +446,7 @@ class DocumentController extends Controller
         $documentType = str_replace('_', '-', $result->metadata['document_type'] ?? 'document');
         $country = strtolower($result->metadata['country'] ?? 'document');
         $timestamp = now()->format('Y-m-d_H-i-s');
-        
+
         return "{$documentType}_{$country}_{$timestamp}.pdf";
     }
 
@@ -490,6 +457,7 @@ class DocumentController extends Controller
     {
         try {
             \DB::connection()->getPdo();
+
             return true;
         } catch (\Exception $e) {
             return false;
@@ -503,6 +471,7 @@ class DocumentController extends Controller
     {
         try {
             Cache::put('health_check', 'ok', 10);
+
             return Cache::get('health_check') === 'ok';
         } catch (\Exception $e) {
             return false;
@@ -518,6 +487,7 @@ class DocumentController extends Controller
             Storage::put('health_check.txt', 'ok');
             $result = Storage::get('health_check.txt') === 'ok';
             Storage::delete('health_check.txt');
+
             return $result;
         } catch (\Exception $e) {
             return false;

@@ -5,30 +5,30 @@ namespace App\Data;
 use App\Enums\Country;
 use App\Enums\DocumentType;
 use App\Enums\ToneLevel;
-use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\In;
-use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
+use Spatie\LaravelData\Attributes\Validation\In;
+use Spatie\LaravelData\Attributes\Validation\Required;
+use Spatie\LaravelData\Attributes\Validation\StringType;
+use Spatie\LaravelData\Data;
 
 class DocumentGenerationRequest extends Data
 {
     public function __construct(
-        #[Required, StringType, In(['SN', 'CI', 'BF', 'ML', 'NE', 'GN', 'BJ', 'TG', 'MR', 'CM', 'TD', 'CF', 'GA', 'GQ', 'CG', 'CD', 'MG', 'KM', 'DJ', 'BI', 'RW'])]
+        #[Required, StringType, In(['SENEGAL', 'COTE_DIVOIRE', 'BURKINA_FASO', 'MALI', 'NIGER', 'GUINEA', 'BENIN', 'TOGO', 'MAURITANIA', 'CAMEROON', 'CHAD', 'CENTRAL_AFRICAN_REPUBLIC', 'GABON', 'EQUATORIAL_GUINEA', 'CONGO', 'DEMOCRATIC_REPUBLIC_OF_CONGO', 'MADAGASCAR', 'COMOROS', 'DJIBOUTI', 'BURUNDI', 'RWANDA'])]
         public string $country,
-        
-        #[Required, StringType, In(['administrative_application', 'motivation_letter', 'internship_request', 'honor_attestation', 'complaint_letter', 'administrative_act_request', 'appeal_or_postponement_letter', 'generic_administrative_correspondence'])]
+
+        #[Required, StringType, In(['ADMINISTRATIVE_APPLICATION', 'MOTIVATION_LETTER', 'INTERNSHIP_REQUEST', 'HONOR_ATTESTATION', 'COMPLAINT_LETTER', 'ADMINISTRATIVE_ACT_REQUEST', 'APPEAL_OR_POSTPONEMENT_LETTER', 'GENERIC_ADMINISTRATIVE_CORRESPONDENCE'])]
         public string $document_type,
-        
-        #[Required, StringType, In(['simple', 'official', 'very_official'])]
+
+        #[Required, StringType, In(['SIMPLE', 'OFFICIAL', 'VERY_OFFICIAL'])]
         public string $tone_level,
-        
+
         #[Required, StringType, In(['fr', 'en'])]
         public string $language,
-        
+
         #[Required, ArrayType]
         public array $fields,
-        
+
         public ?string $session_id = null,
     ) {}
 
@@ -37,12 +37,12 @@ class DocumentGenerationRequest extends Data
      */
     public static function fromRequest(\App\Http\Requests\DocumentRequest $request): self
     {
-        $validated = $request->getValidatedData();
-        
+        $validated = $request->validated();
+
         return new self(
-            country: $validated['country']->value,
-            document_type: $validated['document_type']->value,
-            tone_level: $validated['tone_level']->value,
+            country: $validated['country'],
+            document_type: $validated['document_type'],
+            tone_level: $validated['tone_level'],
             language: $validated['language'],
             fields: $validated['fields'],
             session_id: session()->getId()
@@ -54,7 +54,15 @@ class DocumentGenerationRequest extends Data
      */
     public function getCountryEnum(): Country
     {
-        return Country::from($this->country);
+        return Country::make($this->country);
+    }
+
+    /**
+     * Get country value (for country adapter)
+     */
+    public function getCountryValue(): string
+    {
+        return $this->getCountryEnum()->value;
     }
 
     /**
@@ -62,7 +70,15 @@ class DocumentGenerationRequest extends Data
      */
     public function getDocumentTypeEnum(): DocumentType
     {
-        return DocumentType::from($this->document_type);
+        return DocumentType::make($this->document_type);
+    }
+
+    /**
+     * Get document type value (for template engine)
+     */
+    public function getDocumentTypeValue(): string
+    {
+        return $this->getDocumentTypeEnum()->value;
     }
 
     /**
@@ -70,7 +86,15 @@ class DocumentGenerationRequest extends Data
      */
     public function getToneLevelEnum(): ToneLevel
     {
-        return ToneLevel::from($this->tone_level);
+        return ToneLevel::make($this->tone_level);
+    }
+
+    /**
+     * Get tone level value (for country adapter)
+     */
+    public function getToneLevelValue(): string
+    {
+        return $this->getToneLevelEnum()->value;
     }
 
     /**
@@ -79,15 +103,15 @@ class DocumentGenerationRequest extends Data
     public function hasAllRequiredFields(): bool
     {
         $requiredFields = \App\Http\Requests\DocumentRequest::getRequiredFieldsForDocumentType(
-            strtoupper($this->document_type)
+            $this->document_type
         );
-        
+
         foreach ($requiredFields as $field) {
-            if (!isset($this->fields[$field]) || empty($this->fields[$field])) {
+            if (! isset($this->fields[$field]) || empty($this->fields[$field])) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
@@ -97,16 +121,16 @@ class DocumentGenerationRequest extends Data
     public function getMissingRequiredFields(): array
     {
         $requiredFields = \App\Http\Requests\DocumentRequest::getRequiredFieldsForDocumentType(
-            strtoupper($this->document_type)
+            $this->document_type
         );
-        
+
         $missing = [];
         foreach ($requiredFields as $field) {
-            if (!isset($this->fields[$field]) || empty($this->fields[$field])) {
+            if (! isset($this->fields[$field]) || empty($this->fields[$field])) {
                 $missing[] = $field;
             }
         }
-        
+
         return $missing;
     }
 }

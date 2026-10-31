@@ -2,13 +2,11 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\User;
-use App\Http\Controllers\DocumentController;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
 
 class DocumentGenerationIntegrationTest extends TestCase
 {
@@ -19,17 +17,17 @@ class DocumentGenerationIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create test user
         $this->user = User::factory()->create();
-        
+
         // Seed the database with required data
         $this->artisan('db:seed', ['--class' => 'DocumentTemplatesSeeder']);
         $this->artisan('db:seed', ['--class' => 'CountryRulesSeeder']);
-        
+
         // Clear cache before each test
         Cache::flush();
-        
+
         // Set up fake storage
         Storage::fake('local');
     }
@@ -44,8 +42,8 @@ class DocumentGenerationIntegrationTest extends TestCase
         $typesResponse->assertJsonStructure([
             'success',
             'data' => [
-                '*' => ['key', 'value', 'label', 'required_fields']
-            ]
+                '*' => ['key', 'value', 'label', 'required_fields'],
+            ],
         ]);
 
         // Step 2: Get supported countries
@@ -54,8 +52,8 @@ class DocumentGenerationIntegrationTest extends TestCase
         $countriesResponse->assertJsonStructure([
             'success',
             'data' => [
-                '*' => ['key', 'value', 'label', 'supported']
-            ]
+                '*' => ['key', 'value', 'label', 'supported'],
+            ],
         ]);
 
         // Step 3: Get tone levels
@@ -64,8 +62,8 @@ class DocumentGenerationIntegrationTest extends TestCase
         $toneLevelsResponse->assertJsonStructure([
             'success',
             'data' => [
-                '*' => ['key', 'value', 'label']
-            ]
+                '*' => ['key', 'value', 'label'],
+            ],
         ]);
 
         // Step 4: Generate document preview
@@ -77,15 +75,17 @@ class DocumentGenerationIntegrationTest extends TestCase
             'fields' => [
                 'applicant_name' => 'Jean Dupont',
                 'applicant_address' => '123 Rue de la Paix, Dakar',
+                'applicant_city' => 'Dakar',
                 'applicant_phone' => '+221 77 123 45 67',
                 'applicant_email' => 'jean.dupont@email.com',
                 'recipient_title' => 'Monsieur le Directeur',
                 'recipient_name' => 'Amadou Diallo',
                 'recipient_organization' => 'Ministère de l\'Administration',
                 'subject' => 'Demande de certificat de résidence',
+                'request_context' => 'Demande administrative pour obtenir un certificat de résidence',
                 'request_details' => 'Je sollicite par la présente un certificat de résidence.',
-                'date' => '2024-01-15'
-            ]
+                'date' => '2024-01-15',
+            ],
         ];
 
         $previewResponse = $this->postJson(route('api.documents.preview'), $previewData);
@@ -95,8 +95,8 @@ class DocumentGenerationIntegrationTest extends TestCase
             'data' => [
                 'content',
                 'metadata',
-                'session_id'
-            ]
+                'session_id',
+            ],
         ]);
 
         $previewContent = $previewResponse->json('data.content');
@@ -113,8 +113,8 @@ class DocumentGenerationIntegrationTest extends TestCase
                 'document_id',
                 'session_id',
                 'metadata',
-                'download_url'
-            ]
+                'download_url',
+            ],
         ]);
 
         $documentId = $generateResponse->json('data.document_id');
@@ -131,7 +131,7 @@ class DocumentGenerationIntegrationTest extends TestCase
         $downloadResponse->assertHeader('Content-Type', 'application/pdf');
 
         // Verify PDF file was created in storage
-        $this->assertTrue(Storage::disk('local')->exists('documents/' . date('Y/m/d')));
+        $this->assertTrue(Storage::disk('local')->exists('documents/'.date('Y/m/d')));
     }
 
     public function test_document_generation_with_validation_errors()
@@ -146,8 +146,10 @@ class DocumentGenerationIntegrationTest extends TestCase
             'language' => 'fr',
             'fields' => [
                 'applicant_name' => 'Jean Dupont',
+                'applicant_city' => 'Dakar',
+                'request_context' => 'Test context',
                 // Missing other required fields
-            ]
+            ],
         ];
 
         $response = $this->postJson(route('api.documents.generate'), $invalidData);
@@ -157,8 +159,8 @@ class DocumentGenerationIntegrationTest extends TestCase
             'error' => [
                 'code',
                 'message',
-                'validation_errors'
-            ]
+                'validation_errors',
+            ],
         ]);
     }
 
@@ -174,15 +176,17 @@ class DocumentGenerationIntegrationTest extends TestCase
             'fields' => [
                 'applicant_name' => 'Jean Dupont',
                 'applicant_address' => '123 Rue de la Paix',
+                'applicant_city' => 'Dakar',
                 'applicant_phone' => '+221 77 123 45 67',
                 'applicant_email' => 'jean.dupont@email.com',
                 'recipient_title' => 'Monsieur le Directeur',
                 'recipient_name' => 'Amadou Diallo',
                 'recipient_organization' => 'Ministère',
                 'subject' => 'Test',
+                'request_context' => 'Test context',
                 'request_details' => 'Test request',
-                'date' => '2024-01-15'
-            ]
+                'date' => '2024-01-15',
+            ],
         ];
 
         $response = $this->postJson(route('api.documents.generate'), $invalidData);
@@ -202,15 +206,17 @@ class DocumentGenerationIntegrationTest extends TestCase
             'fields' => [
                 'applicant_name' => 'Jean Dupont',
                 'applicant_address' => '123 Rue de la Paix, Dakar',
+                'applicant_city' => 'Dakar',
                 'applicant_phone' => '+221 77 123 45 67',
                 'applicant_email' => 'jean.dupont@email.com',
                 'recipient_title' => 'Monsieur le Directeur',
                 'recipient_name' => 'Amadou Diallo',
                 'recipient_organization' => 'Ministère de l\'Administration',
                 'subject' => 'Demande de certificat',
+                'request_context' => 'Demande administrative pour certificat',
                 'request_details' => 'Je sollicite un certificat.',
-                'date' => '2024-01-15'
-            ]
+                'date' => '2024-01-15',
+            ],
         ];
 
         // Make requests up to the rate limit (10 per minute)
@@ -232,7 +238,7 @@ class DocumentGenerationIntegrationTest extends TestCase
         // Try to download with wrong session ID
         $response = $this->get(route('documents.download', [
             'session' => 'wrong_session_id',
-            'document' => 'some_document_id'
+            'document' => 'some_document_id',
         ]));
 
         $response->assertStatus(403);
@@ -246,7 +252,7 @@ class DocumentGenerationIntegrationTest extends TestCase
         // Try to download non-existent document
         $response = $this->get(route('documents.download', [
             'session' => session()->getId(),
-            'document' => 'non_existent_document'
+            'document' => 'non_existent_document',
         ]));
 
         $response->assertStatus(404);
@@ -263,9 +269,9 @@ class DocumentGenerationIntegrationTest extends TestCase
             'checks' => [
                 'database',
                 'cache',
-                'storage'
+                'storage',
             ],
-            'timestamp'
+            'timestamp',
         ]);
     }
 
@@ -274,7 +280,7 @@ class DocumentGenerationIntegrationTest extends TestCase
         $this->actingAs($this->user);
 
         $response = $this->get(route('document-generator'));
-        
+
         $response->assertHeader('X-Content-Type-Options', 'nosniff');
         $response->assertHeader('X-Frame-Options', 'DENY');
         $response->assertHeader('X-XSS-Protection', '1; mode=block');
@@ -311,19 +317,21 @@ class DocumentGenerationIntegrationTest extends TestCase
             'fields' => [
                 'applicant_name' => 'Jean Dupont',
                 'applicant_address' => '123 Rue de la Paix, Dakar',
+                'applicant_city' => 'Dakar',
                 'applicant_phone' => '+221 77 123 45 67',
                 'applicant_email' => 'jean.dupont@email.com',
                 'recipient_title' => 'Monsieur le Directeur',
                 'recipient_name' => 'Amadou Diallo',
                 'recipient_organization' => 'Ministère de l\'Administration',
                 'subject' => 'Demande de certificat',
+                'request_context' => 'Demande administrative pour certificat',
                 'request_details' => 'Vous devriez accepter ma demande car j\'ai raison légalement.',
-                'date' => '2024-01-15'
-            ]
+                'date' => '2024-01-15',
+            ],
         ];
 
         $response = $this->postJson(route('api.documents.generate'), $problematicData);
-        
+
         // Should handle content neutrality violation gracefully
         $response->assertStatus(400);
         $response->assertJsonPath('error.code', 'CONTENT_NEUTRALITY_VIOLATION');
@@ -343,22 +351,24 @@ class DocumentGenerationIntegrationTest extends TestCase
             'fields' => [
                 'applicant_name' => 'User Test',
                 'applicant_address' => '123 Test Street',
+                'applicant_city' => 'Dakar',
                 'applicant_phone' => '+221 77 123 45 67',
                 'applicant_email' => 'test@email.com',
                 'recipient_title' => 'Monsieur le Directeur',
                 'recipient_name' => 'Test Recipient',
                 'recipient_organization' => 'Test Organization',
                 'subject' => 'Test Subject',
+                'request_context' => 'Test context for administrative request',
                 'request_details' => 'Test request details',
-                'date' => '2024-01-15'
-            ]
+                'date' => '2024-01-15',
+            ],
         ];
 
         // Generate document as user1
         $this->actingAs($user1);
         $response1 = $this->postJson(route('api.documents.generate'), $documentData);
         $response1->assertSuccessful();
-        
+
         $documentId1 = $response1->json('data.document_id');
         $sessionId1 = $response1->json('data.session_id');
 
@@ -366,7 +376,7 @@ class DocumentGenerationIntegrationTest extends TestCase
         $this->actingAs($user2);
         $response2 = $this->get(route('documents.download', [
             'session' => $sessionId1,
-            'document' => $documentId1
+            'document' => $documentId1,
         ]));
 
         // Should be denied due to session isolation
